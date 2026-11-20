@@ -33,6 +33,34 @@ function fmtTime(sec) {
   return hh ? hh + ':' + pad2(m) + ':' + pad2(s) : m + ':' + pad2(s);
 }
 const todayKey = (d) => { d = d || new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); };
+const isColor = c => /^#[0-9a-fA-F]{6}$/.test(c || '');
+function lum(hex) { const n = parseInt(hex.slice(1), 16); const ch = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * ch[0] + .7152 * ch[1] + .0722 * ch[2]; }
+const isLight = hex => isColor(hex) && lum(hex) > .33;
+function colorPicker(get, set, presets, opts) {
+  opts = opts || {};
+  const wrap = h('div', { class: 'cp' });
+  const draw = () => {
+    wrap.innerHTML = '';
+    if (opts.label) wrap.appendChild(h('span', { class: 'lbl' }, opts.label));
+    if (opts.def) wrap.appendChild(h('button', { class: 'b sm' + (!get() ? ' on' : ''), onClick: () => { set(null); draw(); } }, opts.def));
+    presets.forEach(c => wrap.appendChild(h('button', { class: 'sw' + (get() && get().toLowerCase() === c.toLowerCase() ? ' on' : ''), 'aria-label': 'Color ' + c, style: { background: c }, onClick: () => { set(c); draw(); } })));
+    const inp = h('input', { type: 'color', 'aria-label': 'Pick any color', value: get() || opts.fallback || '#0B1F3A' });
+    inp.addEventListener('input', () => set(inp.value));
+    inp.addEventListener('change', () => { set(inp.value); draw(); });
+    wrap.append(inp, h('span', { class: 'muted', style: { fontSize: '13px' } }, '← any color'));
+  };
+  draw(); return wrap;
+}
+const BG_PRESETS = ['#0B1F3A', '#1E3A63', '#2A2F3A', '#000000', '#FFFFFF', '#F6EFDF', '#22362C', '#3B1F4A', '#5DA9FF', '#3DDC84', '#F5C842', '#FF6B5E'];
+const CARD_PRESETS = ['#FFFFFF', '#EAF3FF', '#FFF4C2', '#DFF5E1', '#FFE0E6', '#1E3A63', '#2A2F3A', '#000000', '#5DA9FF', '#3DDC84', '#F5C842', '#FF6B5E'];
+function applyCard(w, el) {
+  if (!w.card || W[w.type].ownColor) return;
+  const light = isLight(w.card);
+  el.classList.remove('clear'); el.classList.toggle('lightcard', light);
+  el.style.background = w.card; el.style.setProperty('--card', w.card);
+  el.style.borderColor = light ? 'rgba(11,31,58,.2)' : 'rgba(255,255,255,.18)';
+  el.querySelector('.wg-head').style.color = '';
+}
 const FRAMED = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 
 /* ---------- icons ---------- */
@@ -242,10 +270,12 @@ const BGS = {
   cream: { name: 'Cream', c: '#F6EFDF', minor: 'rgba(11,31,58,.07)', major: 'rgba(11,31,58,.14)' },
   chalk: { name: 'Chalkboard', c: '#22362C', minor: 'rgba(255,255,255,.06)', major: 'rgba(255,255,255,.13)' },
   slate: { name: 'Slate', c: '#1E2530', minor: 'rgba(255,255,255,.05)', major: 'rgba(255,255,255,.11)' },
+  solid: { name: 'Solid color', c: '#0B1F3A', minor: 'rgba(255,255,255,.06)', major: 'rgba(255,255,255,.14)' },
   photo: { name: 'Your photo', c: '#0B1F3A', minor: 'rgba(255,255,255,.10)', major: 'rgba(255,255,255,.22)' }
 };
 function applyBg() {
-  const b = board.bg, d = BGS[b.kind] || BGS.grid;
+  const b = board.bg; let d = BGS[b.kind] || BGS.grid;
+  if (b.kind === 'solid') { const c = isColor(b.color) ? b.color : '#0B1F3A', lt = isLight(c); d = { c, minor: lt ? 'rgba(11,31,58,.07)' : 'rgba(255,255,255,.06)', major: lt ? 'rgba(11,31,58,.15)' : 'rgba(255,255,255,.14)' }; }
   boardEl.style.backgroundColor = d.c;
   const photo = b.kind === 'photo' ? Images.get(b.photo) : null;
   bgPhoto.style.backgroundImage = photo ? 'url("' + photo + '")' : 'none';
@@ -260,7 +290,7 @@ function applyBg() {
     const cx = Math.round(COLS / 2) * cell, cy = Math.round(ROWS / 2) * cell;
     axesLayer.append(h('div', { style: { left: (cx - 1) + 'px', top: 0, bottom: 0, width: '2px' } }), h('div', { style: { top: (cy - 1) + 'px', left: 0, right: 0, height: '2px' } }));
   }
-  document.body.classList.toggle('lightbg', b.kind === 'graph' || b.kind === 'cream');
+  document.body.classList.toggle('lightbg', b.kind === 'graph' || b.kind === 'cream' || (b.kind === 'solid' && isLight(b.color)));
 }
 
 /* ---------- widgets on the board ---------- */
@@ -277,11 +307,11 @@ function mountW(w) {
   const d = W[w.type]; if (!d) return;
   const titleEl = h('span', { class: 'wg-title' }, titleOf(w));
   const tools = h('span', { class: 'wg-tools' },
-    d.settings ? h('button', { 'aria-label': 'Settings', title: 'Settings', onClick: e => { e.stopPropagation(); openSettings(w.id); } }, icon('gear', 17)) : null,
+    h('button', { 'aria-label': 'Settings', title: 'Settings', onClick: e => { e.stopPropagation(); openSettings(w.id); } }, icon('gear', 17)),
     h('button', { class: 'lk', 'aria-label': 'Duplicate', title: 'Duplicate', onClick: e => { e.stopPropagation(); duplicateW(w.id); } }, icon('copy', 17)),
     h('button', { class: 'lk', 'aria-label': 'Bring to front', title: 'Bring to front', onClick: e => { e.stopPropagation(); frontW(w.id); } }, icon('front', 17)),
     h('button', { class: 'del lk', 'aria-label': 'Remove widget', title: 'Remove', onClick: e => { e.stopPropagation(); removeW(w.id); } }, icon('x', 17)));
-  const gear = d.settings ? h('button', { class: 'wg-gear', 'aria-label': 'Settings', onClick: e => { e.stopPropagation(); select(w.id); openSettings(w.id); } }, icon('gear', 16)) : null;
+  const gear = true ? h('button', { class: 'wg-gear', 'aria-label': 'Settings', onClick: e => { e.stopPropagation(); select(w.id); openSettings(w.id); } }, icon('gear', 16)) : null;
   const head = h('div', { class: 'wg-head' }, titleEl, gear, tools);
   const body = h('div', { class: 'wg-body' });
   const rs = h('div', { class: 'wg-rs', 'aria-hidden': 'true' });
@@ -308,6 +338,7 @@ function mountW(w) {
     it.onResize = r.onResize; it.onDestroy = r.destroy;
     if (r.onResize && window.ResizeObserver) { let raf = 0; const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { try { r.onResize(); } catch (e) { } }); }); ro.observe(body); owned.push(() => ro.disconnect()); }
   } catch (e) { console.error(e); body.textContent = 'This widget hit an error.'; }
+  applyCard(w, el);
   head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; startDrag(e, w.id, 'move'); });
   rs.addEventListener('pointerdown', e => startDrag(e, w.id, 'size'));
   el.addEventListener('pointerdown', () => { if (!document.body.classList.contains('present')) select(w.id); }, true);
@@ -534,11 +565,16 @@ function confirmBtn(label, fn, cls) {
   return b;
 }
 function openSettings(id) {
-  const w = findW(id); if (!w) return; const d = W[w.type]; if (!d.settings) return;
+  const w = findW(id); if (!w) return; const d = W[w.type];
   const before = snap();
   sheet(titleOf(w) + ' settings', body => {
     const f = Form(body, () => { remountW(id); saveCurrent(); });
-    d.settings(f, w.p, { w, rebuild: () => openSheet && openSheet.rebuild(), remount: () => remountW(id), save: () => saveCurrent() });
+    if (d.settings) d.settings(f, w.p, { w, rebuild: () => openSheet && openSheet.rebuild(), remount: () => remountW(id), save: () => saveCurrent() });
+    if (!d.ownColor) {
+      f.sec('Card color');
+      f.node(colorPicker(() => w.card, c => { w.card = c; remountW(id); saveCurrent(); }, CARD_PRESETS, { def: 'Default navy', fallback: '#13294B' }));
+      f.buttons([['Use this color on every card', () => { board.widgets.forEach(x => { if (!W[x.type].ownColor) x.card = w.card; }); renderAll(); saveCurrent(); toast('Every card updated'); }]]);
+    }
     f.sec('Widget');
     f.buttons([['Duplicate', () => { closeSheet(); duplicateW(id); }], ['Bring to front', () => frontW(id)]]);
     f.node(confirmBtn('Remove this widget', () => { closeSheet(); removeW(id); }));
@@ -574,7 +610,7 @@ function openBoardPanel() {
     const g = h('div', { class: 'bgs' });
     Object.keys(BGS).forEach(k => {
       const d = BGS[k];
-      const btn = h('button', { class: board.bg.kind === k ? 'on' : '', 'aria-label': d.name, style: { backgroundColor: d.c, backgroundImage: k === 'photo' ? 'none' : 'linear-gradient(' + d.major + ' 1px,transparent 1px),linear-gradient(90deg,' + d.major + ' 1px,transparent 1px)', backgroundSize: '20px 20px' } });
+      const btn = h('button', { class: board.bg.kind === k ? 'on' : '', 'aria-label': d.name, style: { backgroundColor: k === 'solid' && isColor(board.bg.color) ? board.bg.color : d.c, backgroundImage: k === 'photo' || k === 'solid' ? 'none' : 'linear-gradient(' + d.major + ' 1px,transparent 1px),linear-gradient(90deg,' + d.major + ' 1px,transparent 1px)', backgroundSize: '20px 20px' } });
       if (k === 'photo') { const ph = Images.get(board.bg.photo); if (ph) { btn.style.backgroundImage = 'url("' + ph + '")'; btn.style.backgroundSize = 'cover'; } else { btn.appendChild(h('span', { style: { fontSize: '40px', marginTop: 0, color: '#9CC8FF' } }, '+')); btn.style.border = '2px dashed rgba(156,200,255,.5)'; } }
       btn.addEventListener('click', async () => {
         if (k === 'photo') {
@@ -586,6 +622,8 @@ function openBoardPanel() {
       g.appendChild(h('div', {}, btn, h('span', {}, d.name)));
     });
     body.appendChild(g);
+    f.sec('Solid color');
+    f.node(colorPicker(() => board.bg.kind === 'solid' ? board.bg.color || '#0B1F3A' : null, c => { board.bg.kind = 'solid'; board.bg.color = c; applyBg(); saveCurrent(); const t = body.querySelector('.bgs button[aria-label="Solid color"]'); if (t) t.style.backgroundColor = c; body.querySelectorAll('.bgs button').forEach(x => x.classList.toggle('on', x === t)); }, BG_PRESETS, { label: 'Tap a color, or use the picker for any color' }));
     if (board.bg.kind === 'photo' && board.bg.photo) f.button('Choose a different photo', async () => { const file = await pickFile('image/*'); if (!file) return; try { board.bg.photo = Images.put(await readImageFile(file, 2000)); applyBg(); saveCurrent(); } catch (e) { toast(e.message); } });
     f.sec('Grid');
     f.toggle('Grid lines', () => board.bg.grid !== false, v => { board.bg.grid = v; });
@@ -703,14 +741,14 @@ function normalizeBoard(b) {
   n.name = typeof b.name === 'string' ? b.name.slice(0, 80) : n.name;
   n.updated = +b.updated || Date.now();
   const bg = b.bg || {};
-  n.bg = { kind: BGS[bg.kind] ? bg.kind : 'grid', photo: typeof bg.photo === 'string' ? bg.photo.slice(0, 40) : null, grid: bg.grid !== false, snap: bg.snap !== false, axes: !!bg.axes };
+  n.bg = { kind: BGS[bg.kind] ? bg.kind : 'grid', photo: typeof bg.photo === 'string' ? bg.photo.slice(0, 40) : null, grid: bg.grid !== false, snap: bg.snap !== false, axes: !!bg.axes, color: isColor(bg.color) ? bg.color : null };
   n.aspect = b.aspect === '16:9' ? '16:9' : 'fit';
   n.scale = clamp(+b.scale || 1, 0.6, 1.8);
   n.widgets = b.widgets.filter(w => w && W[w.type]).slice(0, 120).map(w => {
     const d = W[w.type], size = d.size || [8, 5];
     const p = Object.assign(d.defaults ? d.defaults() : {}, (w.p && typeof w.p === 'object') ? w.p : {});
     if (d.clean) d.clean(p);
-    return { id: typeof w.id === 'string' ? w.id.slice(0, 40) : uid(), type: w.type, x: clamp(+w.x || 0, 0, COLS - 1), y: clamp(+w.y || 0, 0, 200), w: clamp(+w.w || size[0], 1, COLS), h: clamp(+w.h || size[1], 1, 60), z: +w.z || 1, p };
+    return { id: typeof w.id === 'string' ? w.id.slice(0, 40) : uid(), type: w.type, card: isColor(w.card) ? w.card : null, x: clamp(+w.x || 0, 0, COLS - 1), y: clamp(+w.y || 0, 0, 200), w: clamp(+w.w || size[0], 1, COLS), h: clamp(+w.h || size[1], 1, 60), z: +w.z || 1, p };
   });
   n.ink = Array.isArray(b.ink) ? b.ink.filter(s => s && Array.isArray(s.p)).slice(0, 2000).map(s => ({ c: /^#[0-9a-fA-F]{6}$/.test(s.c) ? s.c : '#FFFFFF', w: clamp(+s.w || .15, .02, 1), p: s.p.filter(q => Array.isArray(q) && q.length === 2).map(q => [+q[0] || 0, +q[1] || 0]) })) : [];
   return n;

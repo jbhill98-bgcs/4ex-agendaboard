@@ -54,7 +54,7 @@ W.spinner = {
     function drawTally() {
       tallyBox.innerHTML = ''; if (!p.showTally) return;
       const max = Math.max(1, ...p.sections.map(s => p.tally[s.c] || 0));
-      p.sections.forEach(s => { const v = p.tally[s.c] || 0; tallyBox.appendChild(h('div', { style: { display: 'flex', alignItems: 'center', gap: '.5em' } }, h('span', { style: { width: '4.5em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, s.name), h('div', { style: { flex: 1, height: '.8em', background: 'rgba(255,255,255,.08)', borderRadius: '.4em', overflow: 'hidden' } }, h('div', { style: { width: (100 * v / max) + '%', height: '100%', background: s.c, borderRadius: '.4em' } })), h('span', { style: { width: '2em', textAlign: 'right' } }, v))); });
+      p.sections.forEach(s => { const v = p.tally[s.c] || 0; tallyBox.appendChild(h('div', { style: { display: 'flex', alignItems: 'center', gap: '.5em' } }, h('span', { style: { width: '4.5em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, s.name), h('div', { style: { flex: 1, height: '.8em', background: 'var(--track)', borderRadius: '.4em', overflow: 'hidden' } }, h('div', { style: { width: (100 * v / max) + '%', height: '100%', background: s.c, borderRadius: '.4em' } })), h('span', { style: { width: '2em', textAlign: 'right' } }, v))); });
     }
     function spin() {
       if (spinning || !n) return; spinning = true; spinB.disabled = true; Sound.unlock();
@@ -441,8 +441,8 @@ W.plane = {
       if (p.nums) {
         const k = Math.max(1, Math.ceil(22 / (u * st)));
         const lab = v => String(Math.round(v * 1000) / 1000).replace('-', '−');
-        for (let x = first(p.xmin), j = 0; x <= p.xmax + 1e-9; x += st, j++) { if (Math.abs(x) < 1e-9 || Math.round(x / st) % k) continue; g += '<text x="' + X(x) + '" y="' + (Y(ay) + fsz + 3) + '" font-size="' + fsz + '" fill="' + ink + '" text-anchor="middle" font-family="Lexend,sans-serif" opacity=".8">' + lab(x) + '</text>'; }
-        for (let y = first(p.ymin); y <= p.ymax + 1e-9; y += st) { if (Math.abs(y) < 1e-9 || Math.round(y / st) % k) continue; g += '<text x="' + (X(ax) - 5) + '" y="' + (Y(y) + fsz * .35) + '" font-size="' + fsz + '" fill="' + ink + '" text-anchor="end" font-family="Lexend,sans-serif" opacity=".8">' + lab(y) + '</text>'; }
+        for (let x = first(p.xmin), j = 0; x <= p.xmax + 1e-9; x += st, j++) { if (Math.abs(x) < 1e-9 || Math.round(x / st) % k) continue; g += '<text x="' + X(x) + '" y="' + (Y(ay) + fsz + 3) + '" font-size="' + fsz + '" fill="' + ink + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" opacity=".8">' + lab(x) + '</text>'; }
+        for (let y = first(p.ymin); y <= p.ymax + 1e-9; y += st) { if (Math.abs(y) < 1e-9 || Math.round(y / st) % k) continue; g += '<text x="' + (X(ax) - 5) + '" y="' + (Y(y) + fsz * .35) + '" font-size="' + fsz + '" fill="' + ink + '" text-anchor="end" font-family="Arial,Helvetica,sans-serif" opacity=".8">' + lab(y) + '</text>'; }
       }
       p.eqs.split('\n').forEach((line, i) => {
         const e = parseEq(line); if (!e) return; const col = PLANE_COLORS[i % PLANE_COLORS.length];
@@ -460,7 +460,7 @@ W.plane = {
       p.points.forEach(q => {
         g += '<circle cx="' + X(q.x) + '" cy="' + Y(q.y) + '" r="' + r + '" fill="#F5C842" stroke="' + (p.light ? '#0B1F3A' : '#0B1F3A') + '" stroke-width="2"/>';
         const t = (q.l ? q.l + ' ' : '') + (p.coords ? '(' + q.x + ', ' + q.y + ')' : '');
-        if (t) g += '<text x="' + (X(q.x) + r + 3) + '" y="' + (Y(q.y) - r - 2) + '" font-size="' + clamp(fsz * 1.15, 11, 20) + '" font-weight="600" fill="' + ink + '" font-family="Lexend,sans-serif" paint-order="stroke" stroke="' + (p.light ? '#fff' : '#13294B') + '" stroke-width="4">' + t.replace(/-/g, '−').replace(/[<>&]/g, '') + '</text>';
+        if (t) g += '<text x="' + (X(q.x) + r + 3) + '" y="' + (Y(q.y) - r - 2) + '" font-size="' + clamp(fsz * 1.15, 11, 20) + '" font-weight="600" fill="' + ink + '" font-family="Arial,Helvetica,sans-serif" paint-order="stroke" stroke="' + (p.light ? '#fff' : '#13294B') + '" stroke-width="4">' + t.replace(/-/g, '−').replace(/[<>&]/g, '') + '</text>';
       });
       svgBox.innerHTML = '<svg width="' + Wd + '" height="' + Hd + '" role="img" aria-label="Coordinate plane"><defs><clipPath id="pc' + api.w.id + '"><rect x="' + X(p.xmin) + '" y="' + Y(p.ymax) + '" width="' + (xr * u) + '" height="' + (yr * u) + '"/></clipPath></defs>' + g + '</svg>';
     }

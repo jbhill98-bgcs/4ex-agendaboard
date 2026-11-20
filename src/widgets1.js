@@ -9,7 +9,7 @@ function analogSVG() {
   let t = '';
   for (let i = 0; i < 60; i++) { const a = i * 6, long = i % 5 === 0; t += '<line x1="100" y1="' + (long ? 14 : 12) + '" x2="100" y2="' + (long ? 28 : 19) + '" stroke="' + (long ? '#9CC8FF' : 'rgba(156,200,255,.45)') + '" stroke-width="' + (long ? 4 : 2) + '" stroke-linecap="round" transform="rotate(' + a + ' 100 100)"/>'; }
   let n = '';
-  for (let i = 1; i <= 12; i++) { const a = i * Math.PI / 6; n += '<text x="' + (100 + 62 * Math.sin(a)).toFixed(1) + '" y="' + (100 - 62 * Math.cos(a) + 7).toFixed(1) + '" text-anchor="middle" font-size="20" font-weight="600" fill="#F2F6FC" font-family="Lexend,system-ui,sans-serif">' + i + '</text>'; }
+  for (let i = 1; i <= 12; i++) { const a = i * Math.PI / 6; n += '<text x="' + (100 + 62 * Math.sin(a)).toFixed(1) + '" y="' + (100 - 62 * Math.cos(a) + 7).toFixed(1) + '" text-anchor="middle" font-size="20" font-weight="600" fill="#F2F6FC" font-family="Arial,Helvetica,sans-serif">' + i + '</text>'; }
   return '<svg viewBox="0 0 200 200" style="width:100%;height:100%" role="img" aria-label="Analog clock"><circle cx="100" cy="100" r="96" fill="#0B1F3A" stroke="#9CC8FF" stroke-width="4"/>' + t + n +
     '<line class="hh" x1="100" y1="100" x2="100" y2="52" stroke="#F2F6FC" stroke-width="9" stroke-linecap="round"/>' +
     '<line class="mh" x1="100" y1="100" x2="100" y2="30" stroke="#5DA9FF" stroke-width="6" stroke-linecap="round"/>' +
@@ -74,7 +74,7 @@ W.timer = {
       pie.appendChild(center); area.appendChild(pie); view.pie = pie; view.center = center;
     } else if (p.style === 'bar') {
       const fillEl = h('div', { style: { height: '100%', borderRadius: '999px', transition: 'width .25s linear' } });
-      const bar = h('div', { style: { width: '100%', height: 'min(22cqh, 12cqw)', background: 'rgba(255,255,255,.1)', borderRadius: '999px', overflow: 'hidden' } }, fillEl);
+      const bar = h('div', { style: { width: '100%', height: 'min(22cqh, 12cqw)', background: 'var(--track)', borderRadius: '999px', overflow: 'hidden' } }, fillEl);
       area.appendChild(h('div', { style: { width: '100%', padding: '0 5cqw', display: 'flex', flexDirection: 'column', gap: '4cqh' } }, h('div', { style: { fontSize: fs(22, 45), cursor: 'pointer' } }, timeTxt), bar));
       view.fill = fillEl;
     } else {
@@ -108,7 +108,7 @@ W.timer = {
       presets.style.display = p.running || p.done ? 'none' : '';
       resetBtn.style.display = p.done ? 'none' : '';
       const col = p.color || '#5DA9FF';
-      if (view.pie) view.pie.style.background = 'conic-gradient(' + col + ' 0deg ' + (fr * 360) + 'deg, rgba(255,255,255,.07) ' + (fr * 360) + 'deg 360deg)';
+      if (view.pie) view.pie.style.background = 'conic-gradient(' + col + ' 0deg ' + (fr * 360) + 'deg, var(--track) ' + (fr * 360) + 'deg 360deg)';
       if (view.fill) { view.fill.style.width = (fr * 100) + '%'; view.fill.style.background = p.color && p.color !== '#5DA9FF' ? p.color : (fr > .5 ? '#5DA9FF' : fr > .2 ? '#F5C842' : '#FF5A4E'); }
       if (view.hg) {
         const top = Math.sqrt(fr) * 74, bot = Math.pow(1 - fr, .75) * 70;
@@ -247,7 +247,7 @@ W.period = {
     const nameEl = h('div', { style: { fontSize: fs(9, 13), color: 'var(--accent2)', fontWeight: 500 } });
     const big = h('div', { class: 'big', style: { fontSize: fs(16, 34) } });
     const barF = h('div', { style: { height: '100%', background: 'var(--accent)', borderRadius: '999px' } });
-    const bar = h('div', { style: { width: '100%', height: 'min(5cqh,3cqw)', minHeight: '6px', background: 'rgba(255,255,255,.1)', borderRadius: '999px', overflow: 'hidden' } }, barF);
+    const bar = h('div', { style: { width: '100%', height: 'min(5cqh,3cqw)', minHeight: '6px', background: 'var(--track)', borderRadius: '999px', overflow: 'hidden' } }, barF);
     const next = h('div', { class: 'muted', style: { fontSize: fs(6.5, 9) } });
     b.appendChild(h('div', { class: 'fill', style: { alignItems: 'stretch', padding: '0 5cqw', gap: '2.5cqh' } }, nameEl, big, bar, next));
     let lastS = -1;
@@ -282,7 +282,9 @@ const TEXT_SIZES = [['0.7', 'S'], ['1', 'M'], ['1.4', 'L'], ['2', 'XL'], ['2.8',
 function textMount(b, p, api, kind) {
   const txt = h('div', { class: 'txt', contenteditable: 'true', spellcheck: 'false', 'data-ph': kind === 'sticky' ? 'Type a note…' : 'Type here…', role: 'textbox', 'aria-multiline': 'true' });
   txt.innerHTML = cleanHTML(p.html);
-  txt.style.setProperty('--fs', p.size || 1); txt.style.textAlign = p.align || 'left'; txt.style.color = p.color || (kind === 'sticky' ? '#1F1A00' : '#F2F6FC');
+  txt.style.setProperty('--fs', p.size || 1); txt.style.textAlign = p.align || 'left'; let tc = p.color || (kind === 'sticky' ? '#1F1A00' : '#F2F6FC');
+  if (kind !== 'sticky' && api.w.card) { if (isLight(api.w.card) && isLight(tc)) tc = '#0B1F3A'; if (!isLight(api.w.card) && !isLight(tc)) tc = '#F2F6FC'; }
+  txt.style.color = tc;
   if (p.bold) txt.style.fontWeight = '600';
   const el = api.el;
   if (kind === 'sticky') { el.style.background = p.bg || '#FFE58A'; el.style.borderColor = 'rgba(0,0,0,.12)'; el.querySelector('.wg-head').style.color = 'rgba(0,0,0,.55)'; }
@@ -331,7 +333,7 @@ W.text = {
 };
 const STICKY = [['#FFE58A', 'Yellow'], ['#BFE3FF', 'Blue'], ['#FFC7DD', 'Pink'], ['#C8F2C2', 'Green'], ['#FFD3A8', 'Orange'], ['#E4D7FF', 'Purple']];
 W.sticky = {
-  title: 'Sticky note', icon: 'note', size: [7, 5], min: [3, 2],
+  title: 'Sticky note', ownColor: true, icon: 'note', size: [7, 5], min: [3, 2],
   defaults: () => ({ html: '', size: 1, align: 'left', color: '#1F1A00', bg: '#FFE58A' }),
   clean: W.text.clean,
   mount: (b, p, api) => textMount(b, p, api, 'sticky'),
@@ -463,8 +465,9 @@ W.volume = {
     const modeRow = editOnly(h('div', { class: 'ctl', style: { flexWrap: 'nowrap' } }, btn('Set level', () => { p.mode = 'set'; api.save(); api.remount(); }, 'sm' + (p.mode === 'set' ? ' on' : '')), btn('Use mic', () => { p.mode = 'mic'; api.save(); api.remount(); }, 'sm' + (p.mode === 'mic' ? ' on' : ''))));
     b.appendChild(h('div', { class: 'fill', style: { gap: '2.5cqh', padding: '1cqh 0 3cqh', justifyContent: 'stretch' } }, bars, info, msg, h('div', { class: 'ctl' }, modeRow, p.mode === 'mic' ? micBtn : null)));
     function draw(lv, live) {
-      els.forEach((e, i) => { e.style.background = i <= lv ? volColor(i) : 'rgba(255,255,255,.1)'; });
-      num.textContent = Math.round(lv); word.textContent = live && lv > p.goal ? 'Too loud!' : lbl(Math.round(lv)); word.style.color = live && lv > p.goal ? '#FF8A80' : volColor(Math.round(lv));
+      els.forEach((e, i) => { e.style.background = i <= lv ? volColor(i) : 'var(--track)'; });
+      num.textContent = Math.round(lv); word.textContent = live && lv > p.goal ? 'Too loud!' : lbl(Math.round(lv)); const lt = api.el.classList.contains('lightcard'); const vc = i => lt ? (i <= 3 ? '#1E8E4E' : i <= 6 ? '#9A6B00' : '#C9362B') : volColor(i);
+      word.style.color = live && lv > p.goal ? (lt ? '#C9362B' : '#FF8A80') : vc(Math.round(lv));
     }
     draw(p.level);
     let stream = null, raf = 0, smooth = 0, ctx = null;
@@ -511,7 +514,7 @@ const SIGNS = {
 const SIGN_PAL = ['#5DA9FF', '#3DDC84', '#F5C842', '#FF5A4E', '#B18CFF', '#FF9F43', '#F2F6FC'];
 const darkText = c => ['#F5C842', '#3DDC84', '#F2F6FC', '#FF9F43', '#FFE58A'].includes(c);
 W.sign = {
-  title: 'Sign', label: 'Sign (work mode, calculators…)', icon: 'sign', size: [9, 4], min: [3, 2],
+  title: 'Sign', ownColor: true, label: 'Sign (work mode, calculators…)', icon: 'sign', size: [9, 4], min: [3, 2],
   defaults: () => ({ preset: 'work', idx: 0, custom: 'Silent work\nPartner talk\nGroup work' }),
   clean(p) { p.custom = safeStr(p.custom, 600); p.idx = Math.max(0, +p.idx || 0); },
   mount(b, p, api) {
