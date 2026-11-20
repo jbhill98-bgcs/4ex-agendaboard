@@ -574,8 +574,8 @@ function openBoardPanel() {
     const g = h('div', { class: 'bgs' });
     Object.keys(BGS).forEach(k => {
       const d = BGS[k];
-      const btn = h('button', { class: board.bg.kind === k ? 'on' : '', 'aria-label': d.name, style: { backgroundColor: d.c, backgroundImage: k === 'photo' ? 'none' : 'linear-gradient(' + d.major + ' 1px,transparent 1px),linear-gradient(90deg,' + d.major + ' 1px,transparent 1px)', backgroundSize: '12px 12px' } });
-      if (k === 'photo') { const ph = Images.get(board.bg.photo); if (ph) { btn.style.backgroundImage = 'url("' + ph + '")'; btn.style.backgroundSize = 'cover'; } else { btn.appendChild(h('span', { style: { fontSize: '26px', marginTop: 0, color: '#9CC8FF' } }, '+')); btn.style.border = '2px dashed rgba(156,200,255,.5)'; } }
+      const btn = h('button', { class: board.bg.kind === k ? 'on' : '', 'aria-label': d.name, style: { backgroundColor: d.c, backgroundImage: k === 'photo' ? 'none' : 'linear-gradient(' + d.major + ' 1px,transparent 1px),linear-gradient(90deg,' + d.major + ' 1px,transparent 1px)', backgroundSize: '20px 20px' } });
+      if (k === 'photo') { const ph = Images.get(board.bg.photo); if (ph) { btn.style.backgroundImage = 'url("' + ph + '")'; btn.style.backgroundSize = 'cover'; } else { btn.appendChild(h('span', { style: { fontSize: '40px', marginTop: 0, color: '#9CC8FF' } }, '+')); btn.style.border = '2px dashed rgba(156,200,255,.5)'; } }
       btn.addEventListener('click', async () => {
         if (k === 'photo') {
           const file = await pickFile('image/*'); if (!file) return;

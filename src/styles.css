@@ -133,10 +133,10 @@ body.drawing #inkbar{display:flex}
 .tile{min-height:88px;border-radius:14px;border:1px solid rgba(156,200,255,.3);background:var(--navy);color:#DCE8F8;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;text-align:center}
 .tile:hover{border-color:var(--accent)}
 .tile svg{color:var(--accent2)}
-.bgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.bgs button{height:74px;border-radius:12px;border:3px solid transparent;padding:0;position:relative;overflow:hidden}
-.bgs button.on{border-color:var(--accent)}
-.bgs span{display:block;font-size:12px;color:#DCE8F8;margin-top:4px;text-align:center}
+.bgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.bgs button{width:100%;height:120px;border-radius:14px;border:4px solid rgba(156,200,255,.25);padding:0;position:relative;overflow:hidden}
+.bgs button.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(93,169,255,.35)}
+.bgs span{display:block;font-size:16px;font-weight:500;color:#F2F6FC;margin-top:6px;text-align:center}
 input[type=range]{width:100%;accent-color:var(--accent)}
 
 /* ---------- toast / popup / tour ---------- */
