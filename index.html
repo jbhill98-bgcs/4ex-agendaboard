@@ -88,7 +88,6 @@ body.drawing .wg{pointer-events:none}
 [data-ph]:empty::before{content:attr(data-ph);color:var(--muted);opacity:.75;pointer-events:none}
 .txt-bar{position:absolute;left:6px;right:6px;top:4px;display:none;gap:4px;flex-wrap:wrap;z-index:4;background:rgba(6,18,31,.92);border-radius:10px;padding:4px}
 .wg.editing .txt-bar{display:flex}
-.wg.editing .txt{padding-top:52px}
 body.present .txt-bar{display:none!important}
 .txt-bar button{min-width:38px;height:36px;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:var(--text);font-size:15px;padding:0 8px}
 .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.82em;margin:0 .12em;line-height:1.1}
@@ -202,8 +201,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .wg.lightcard .wg-tools button{background:transparent;color:#C9D7EA}
 .wg:not(.sel) .wg-rs{display:none}
 .wg-rs::after{opacity:1;border-color:var(--accent)}
-.wg.sel .txt-bar{top:42px}
-.wg.sel.editing .txt{padding-top:92px}
 .b{border-radius:8px}
 .b:active{transform:none;filter:brightness(.92)}
 #dock{border-radius:14px;padding:4px 6px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -215,6 +212,30 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 #empty .tpls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;pointer-events:auto;margin-top:6px}
 #empty .tpls .b{background:rgba(6,16,30,.6)}
 .tile{border-radius:10px}
+
+/* ===== v1.3: floating bars outside the card ===== */
+.wg{overflow:visible}
+.wg-body{border-radius:inherit}
+.wg.sel{z-index:3000!important}
+.wg-head{left:0;right:auto;width:max-content;max-width:100%;height:36px;border-radius:10px;padding:0 4px 0 12px;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,.35);background:#081426}
+.wg-title{max-width:200px}
+.wg[data-hp=above] .wg-head{top:auto;bottom:calc(100% + 6px)}
+.wg[data-hp=below] .wg-head{top:calc(100% + 6px)}
+.wg[data-hp=inside] .wg-head{top:6px;left:6px}
+.txt-bar{position:absolute;left:0;right:auto;top:auto;width:max-content;max-width:calc(100vw - 20px);display:none;flex-wrap:nowrap;gap:4px;z-index:7;
+  background:#FFFFFF;border:1px solid #C9DAF0;border-radius:10px;padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.wg.editing .txt-bar{display:flex}
+.txt-bar button{min-width:40px;height:38px;border:0;border-radius:8px;background:#EEF4FB;color:#0B1F3A;font-size:16px;font-weight:600;padding:0 10px}
+.txt-bar button:hover{background:#DCE8F8}
+.txt-bar .sepv{width:1px;background:#D6E3F3;margin:4px 2px}
+.wg[data-bp=below] .txt-bar{top:calc(100% + 6px)}
+.wg[data-bp=below2] .txt-bar{top:calc(100% + 48px)}
+.wg[data-bp=above] .txt-bar{bottom:calc(100% + 6px)}
+.wg[data-bp=above2] .txt-bar{bottom:calc(100% + 48px)}
+.wg[data-bp=inside] .txt-bar{top:6px;right:6px;left:auto}
+.sym-pop{top:calc(100% + 6px);left:0;background:#FFFFFF;border:1px solid #C9DAF0;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.wg[data-bp=above] .sym-pop,.wg[data-bp=above2] .sym-pop{top:auto;bottom:calc(100% + 6px)}
+.sym-pop button{background:#EEF4FB;color:#0B1F3A}
 
 </style>
 </head>
@@ -2527,9 +2548,9 @@ const LUCIDE = {"plus": "<svg class=\"lucide lucide-plus\" xmlns=\"http://www.w3
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
-const VERSION = '1.2';
+const VERSION = '1.3';
 const FEEDBACK_URL = '';
-const CHANGES = ['Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
+const CHANGES = ['Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -2845,6 +2866,10 @@ function placeW(w) {
   let ww = Math.min(w.w, COLS), hh = Math.min(w.h, ROWS);
   const x = clamp(w.x, 0, COLS - ww), y = clamp(w.y, 0, ROWS - hh);
   Object.assign(it.el.style, { left: x * cell + 'px', top: y * cell + 'px', width: ww * cell + 'px', height: hh * cell + 'px', zIndex: w.z || 1 });
+  const top = y * cell, bot = BH - (y + hh) * cell - 80; // leave room for the toolbar at the bottom
+  const hp = top >= 44 ? 'above' : bot >= 44 ? 'below' : 'inside';
+  const bp = hp !== 'below' && bot >= 52 ? 'below' : hp === 'below' && bot >= 96 ? 'below2' : hp === 'above' && top >= 96 ? 'above2' : hp !== 'above' && top >= 52 ? 'above' : 'inside';
+  it.el.dataset.hp = hp; it.el.dataset.bp = bp;
   if (it.onResize) try { it.onResize(); } catch (e) { console.error(e); }
 }
 function titleOf(w) { const d = W[w.type]; return (d.titleOf && d.titleOf(w.p)) || d.title; }
@@ -3792,9 +3817,9 @@ function textMount(b, p, api, kind) {
   txt.style.color = tc;
   if (p.bold) txt.style.fontWeight = '600';
   const el = api.el;
-  if (kind === 'sticky') { el.style.background = p.bg || '#FFE58A'; el.style.borderColor = 'rgba(0,0,0,.12)'; el.querySelector('.wg-head').style.color = 'rgba(0,0,0,.55)'; }
+  if (kind === 'sticky') { el.style.background = p.bg || '#FFE58A'; el.style.borderColor = 'rgba(0,0,0,.12)'; }
   else if (p.bg === 'clear') el.classList.add('clear');
-  else if (p.bg && p.bg !== 'card') { el.style.background = p.bg; el.style.borderColor = 'rgba(0,0,0,.12)'; el.querySelector('.wg-head').style.color = 'rgba(0,0,0,.55)'; }
+  else if (p.bg && p.bg !== 'card') { el.style.background = p.bg; el.style.borderColor = 'rgba(0,0,0,.12)'; }
   const bar = h('div', { class: 'txt-bar' });
   const cmd = (c, v) => { try { document.execCommand(c, false, v); } catch (e) { } save(); };
   const ins = html => { txt.focus(); cmd('insertHTML', html); };
@@ -3802,13 +3827,13 @@ function textMount(b, p, api, kind) {
   bar.append(
     h('button', { 'aria-label': 'Bold', style: { fontWeight: 700 }, onClick: () => cmd('bold') }, 'B'),
     h('button', { 'aria-label': 'Exponent', onClick: () => cmd('superscript'), html: 'x<sup>2</sup>' }),
-    h('button', { 'aria-label': 'Subscript', onClick: () => cmd('subscript'), html: 'x<sub>1</sub>' }),
     h('button', { 'aria-label': 'Fraction', onClick: () => { ins('<span class="frac" contenteditable="false"><span class="num" contenteditable="true">a</span><span class="den" contenteditable="true">b</span></span>&#8203;'); focusLast('.frac .num'); } }, 'a/b'),
     h('button', { 'aria-label': 'Square root', onClick: () => { ins('<span class="sqrt" contenteditable="false">√<span class="rad" contenteditable="true">x</span></span>&#8203;'); focusLast('.sqrt .rad'); } }, '√x'),
     h('button', { 'aria-label': 'Math symbols', onClick: () => { symPop.style.display = symPop.style.display === 'none' ? 'grid' : 'none'; } }, 'π ≤ °'),
-    h('button', { 'aria-label': 'Bigger text', onClick: () => bump(1) }, 'A+'),
+    h('span', { class: 'sepv' }),
     h('button', { 'aria-label': 'Smaller text', onClick: () => bump(-1) }, 'A−'),
-    h('button', { 'aria-label': 'Done editing', onClick: () => txt.blur(), style: { marginLeft: 'auto', background: 'var(--accent)', color: 'var(--navy)', fontWeight: 600 } }, 'Done'));
+    h('button', { 'aria-label': 'Bigger text', onClick: () => bump(1) }, 'A+'),
+    h('button', { 'aria-label': 'Done editing', onClick: () => txt.blur(), style: { background: '#0B1F3A', color: '#FFFFFF' } }, 'Done'));
   bar.addEventListener('pointerdown', e => { if (e.target.closest('button')) e.preventDefault(); });
   symPop.addEventListener('pointerdown', e => e.preventDefault());
   function focusLast(sel) { const all = txt.querySelectorAll(sel); const n = all[all.length - 1]; if (!n) return; const r = document.createRange(); r.selectNodeContents(n); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
@@ -3816,10 +3841,10 @@ function textMount(b, p, api, kind) {
   let t = null;
   function save() { clearTimeout(t); t = setTimeout(() => { p.html = cleanHTML(txt.innerHTML); api.save(); }, 350); }
   txt.addEventListener('input', save);
-  txt.addEventListener('focus', () => { if (!document.body.classList.contains('present')) el.classList.add('editing'); });
-  txt.addEventListener('blur', () => { setTimeout(() => { if (!txt.contains(document.activeElement)) { el.classList.remove('editing'); symPop.style.display = 'none'; } }, 150); p.html = cleanHTML(txt.innerHTML); api.save(); });
+  txt.addEventListener('focusin', () => { if (!document.body.classList.contains('present')) el.classList.add('editing'); });
+  txt.addEventListener('focusout', () => { setTimeout(() => { if (!txt.contains(document.activeElement)) { el.classList.remove('editing'); symPop.style.display = 'none'; } }, 150); p.html = cleanHTML(txt.innerHTML); api.save(); });
   txt.addEventListener('paste', e => { e.preventDefault(); const s = (e.clipboardData || window.clipboardData).getData('text/plain'); try { document.execCommand('insertText', false, s); } catch (er) { } });
-  b.append(txt, bar, symPop);
+  b.append(txt); bar.appendChild(symPop); api.el.appendChild(bar);
   api.cleanup(() => { clearTimeout(t); });
 }
 W.text = {
@@ -4027,7 +4052,6 @@ W.sign = {
     if (!list.length) list.push(['Tap ⚙ to add signs', '#5DA9FF']);
     const it = list[p.idx % list.length];
     api.el.style.background = it[1]; api.el.style.borderColor = 'rgba(0,0,0,.15)';
-    api.el.querySelector('.wg-head').style.color = darkText(it[1]) ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.75)';
     const wl = Math.max(...it[0].split(' ').map(w => w.length), 3), two = it[0].length > wl + 3, longest = two ? Math.max(wl, Math.ceil(it[0].length / 2)) : it[0].length;
     b.appendChild(h('button', { class: 'fill', 'aria-label': 'Next sign', style: { border: 0, background: 'transparent', color: darkText(it[1]) ? '#0B1F3A' : '#FFFFFF', fontWeight: 700, fontSize: fs(Math.min(30, 150 / Math.max(longest, 4)), two ? 34 : 60), lineHeight: 1.05, textAlign: 'center', padding: '2cqmin 4cqw', width: '100%' },
       onClick: e => { e.stopPropagation(); p.idx = (p.idx + 1) % list.length; api.save(); api.remount(); } }, it[0]));

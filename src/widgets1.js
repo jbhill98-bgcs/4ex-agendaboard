@@ -287,9 +287,9 @@ function textMount(b, p, api, kind) {
   txt.style.color = tc;
   if (p.bold) txt.style.fontWeight = '600';
   const el = api.el;
-  if (kind === 'sticky') { el.style.background = p.bg || '#FFE58A'; el.style.borderColor = 'rgba(0,0,0,.12)'; el.querySelector('.wg-head').style.color = 'rgba(0,0,0,.55)'; }
+  if (kind === 'sticky') { el.style.background = p.bg || '#FFE58A'; el.style.borderColor = 'rgba(0,0,0,.12)'; }
   else if (p.bg === 'clear') el.classList.add('clear');
-  else if (p.bg && p.bg !== 'card') { el.style.background = p.bg; el.style.borderColor = 'rgba(0,0,0,.12)'; el.querySelector('.wg-head').style.color = 'rgba(0,0,0,.55)'; }
+  else if (p.bg && p.bg !== 'card') { el.style.background = p.bg; el.style.borderColor = 'rgba(0,0,0,.12)'; }
   const bar = h('div', { class: 'txt-bar' });
   const cmd = (c, v) => { try { document.execCommand(c, false, v); } catch (e) { } save(); };
   const ins = html => { txt.focus(); cmd('insertHTML', html); };
@@ -297,13 +297,13 @@ function textMount(b, p, api, kind) {
   bar.append(
     h('button', { 'aria-label': 'Bold', style: { fontWeight: 700 }, onClick: () => cmd('bold') }, 'B'),
     h('button', { 'aria-label': 'Exponent', onClick: () => cmd('superscript'), html: 'x<sup>2</sup>' }),
-    h('button', { 'aria-label': 'Subscript', onClick: () => cmd('subscript'), html: 'x<sub>1</sub>' }),
     h('button', { 'aria-label': 'Fraction', onClick: () => { ins('<span class="frac" contenteditable="false"><span class="num" contenteditable="true">a</span><span class="den" contenteditable="true">b</span></span>&#8203;'); focusLast('.frac .num'); } }, 'a/b'),
     h('button', { 'aria-label': 'Square root', onClick: () => { ins('<span class="sqrt" contenteditable="false">√<span class="rad" contenteditable="true">x</span></span>&#8203;'); focusLast('.sqrt .rad'); } }, '√x'),
     h('button', { 'aria-label': 'Math symbols', onClick: () => { symPop.style.display = symPop.style.display === 'none' ? 'grid' : 'none'; } }, 'π ≤ °'),
-    h('button', { 'aria-label': 'Bigger text', onClick: () => bump(1) }, 'A+'),
+    h('span', { class: 'sepv' }),
     h('button', { 'aria-label': 'Smaller text', onClick: () => bump(-1) }, 'A−'),
-    h('button', { 'aria-label': 'Done editing', onClick: () => txt.blur(), style: { marginLeft: 'auto', background: 'var(--accent)', color: 'var(--navy)', fontWeight: 600 } }, 'Done'));
+    h('button', { 'aria-label': 'Bigger text', onClick: () => bump(1) }, 'A+'),
+    h('button', { 'aria-label': 'Done editing', onClick: () => txt.blur(), style: { background: '#0B1F3A', color: '#FFFFFF' } }, 'Done'));
   bar.addEventListener('pointerdown', e => { if (e.target.closest('button')) e.preventDefault(); });
   symPop.addEventListener('pointerdown', e => e.preventDefault());
   function focusLast(sel) { const all = txt.querySelectorAll(sel); const n = all[all.length - 1]; if (!n) return; const r = document.createRange(); r.selectNodeContents(n); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
@@ -311,10 +311,10 @@ function textMount(b, p, api, kind) {
   let t = null;
   function save() { clearTimeout(t); t = setTimeout(() => { p.html = cleanHTML(txt.innerHTML); api.save(); }, 350); }
   txt.addEventListener('input', save);
-  txt.addEventListener('focus', () => { if (!document.body.classList.contains('present')) el.classList.add('editing'); });
-  txt.addEventListener('blur', () => { setTimeout(() => { if (!txt.contains(document.activeElement)) { el.classList.remove('editing'); symPop.style.display = 'none'; } }, 150); p.html = cleanHTML(txt.innerHTML); api.save(); });
+  txt.addEventListener('focusin', () => { if (!document.body.classList.contains('present')) el.classList.add('editing'); });
+  txt.addEventListener('focusout', () => { setTimeout(() => { if (!txt.contains(document.activeElement)) { el.classList.remove('editing'); symPop.style.display = 'none'; } }, 150); p.html = cleanHTML(txt.innerHTML); api.save(); });
   txt.addEventListener('paste', e => { e.preventDefault(); const s = (e.clipboardData || window.clipboardData).getData('text/plain'); try { document.execCommand('insertText', false, s); } catch (er) { } });
-  b.append(txt, bar, symPop);
+  b.append(txt); bar.appendChild(symPop); api.el.appendChild(bar);
   api.cleanup(() => { clearTimeout(t); });
 }
 W.text = {
@@ -522,7 +522,6 @@ W.sign = {
     if (!list.length) list.push(['Tap ⚙ to add signs', '#5DA9FF']);
     const it = list[p.idx % list.length];
     api.el.style.background = it[1]; api.el.style.borderColor = 'rgba(0,0,0,.15)';
-    api.el.querySelector('.wg-head').style.color = darkText(it[1]) ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.75)';
     const wl = Math.max(...it[0].split(' ').map(w => w.length), 3), two = it[0].length > wl + 3, longest = two ? Math.max(wl, Math.ceil(it[0].length / 2)) : it[0].length;
     b.appendChild(h('button', { class: 'fill', 'aria-label': 'Next sign', style: { border: 0, background: 'transparent', color: darkText(it[1]) ? '#0B1F3A' : '#FFFFFF', fontWeight: 700, fontSize: fs(Math.min(30, 150 / Math.max(longest, 4)), two ? 34 : 60), lineHeight: 1.05, textAlign: 'center', padding: '2cqmin 4cqw', width: '100%' },
       onClick: e => { e.stopPropagation(); p.idx = (p.idx + 1) % list.length; api.save(); api.remount(); } }, it[0]));

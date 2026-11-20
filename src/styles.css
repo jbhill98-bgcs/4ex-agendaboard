@@ -73,7 +73,6 @@ body.drawing .wg{pointer-events:none}
 [data-ph]:empty::before{content:attr(data-ph);color:var(--muted);opacity:.75;pointer-events:none}
 .txt-bar{position:absolute;left:6px;right:6px;top:4px;display:none;gap:4px;flex-wrap:wrap;z-index:4;background:rgba(6,18,31,.92);border-radius:10px;padding:4px}
 .wg.editing .txt-bar{display:flex}
-.wg.editing .txt{padding-top:52px}
 body.present .txt-bar{display:none!important}
 .txt-bar button{min-width:38px;height:36px;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:var(--text);font-size:15px;padding:0 8px}
 .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.82em;margin:0 .12em;line-height:1.1}
@@ -187,8 +186,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .wg.lightcard .wg-tools button{background:transparent;color:#C9D7EA}
 .wg:not(.sel) .wg-rs{display:none}
 .wg-rs::after{opacity:1;border-color:var(--accent)}
-.wg.sel .txt-bar{top:42px}
-.wg.sel.editing .txt{padding-top:92px}
 .b{border-radius:8px}
 .b:active{transform:none;filter:brightness(.92)}
 #dock{border-radius:14px;padding:4px 6px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -200,3 +197,27 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 #empty .tpls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;pointer-events:auto;margin-top:6px}
 #empty .tpls .b{background:rgba(6,16,30,.6)}
 .tile{border-radius:10px}
+
+/* ===== v1.3: floating bars outside the card ===== */
+.wg{overflow:visible}
+.wg-body{border-radius:inherit}
+.wg.sel{z-index:3000!important}
+.wg-head{left:0;right:auto;width:max-content;max-width:100%;height:36px;border-radius:10px;padding:0 4px 0 12px;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,.35);background:#081426}
+.wg-title{max-width:200px}
+.wg[data-hp=above] .wg-head{top:auto;bottom:calc(100% + 6px)}
+.wg[data-hp=below] .wg-head{top:calc(100% + 6px)}
+.wg[data-hp=inside] .wg-head{top:6px;left:6px}
+.txt-bar{position:absolute;left:0;right:auto;top:auto;width:max-content;max-width:calc(100vw - 20px);display:none;flex-wrap:nowrap;gap:4px;z-index:7;
+  background:#FFFFFF;border:1px solid #C9DAF0;border-radius:10px;padding:4px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.wg.editing .txt-bar{display:flex}
+.txt-bar button{min-width:40px;height:38px;border:0;border-radius:8px;background:#EEF4FB;color:#0B1F3A;font-size:16px;font-weight:600;padding:0 10px}
+.txt-bar button:hover{background:#DCE8F8}
+.txt-bar .sepv{width:1px;background:#D6E3F3;margin:4px 2px}
+.wg[data-bp=below] .txt-bar{top:calc(100% + 6px)}
+.wg[data-bp=below2] .txt-bar{top:calc(100% + 48px)}
+.wg[data-bp=above] .txt-bar{bottom:calc(100% + 6px)}
+.wg[data-bp=above2] .txt-bar{bottom:calc(100% + 48px)}
+.wg[data-bp=inside] .txt-bar{top:6px;right:6px;left:auto}
+.sym-pop{top:calc(100% + 6px);left:0;background:#FFFFFF;border:1px solid #C9DAF0;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.wg[data-bp=above] .sym-pop,.wg[data-bp=above2] .sym-pop{top:auto;bottom:calc(100% + 6px)}
+.sym-pop button{background:#EEF4FB;color:#0B1F3A}

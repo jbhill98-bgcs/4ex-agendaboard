@@ -1,9 +1,9 @@
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
-const VERSION = '1.2';
+const VERSION = '1.3';
 const FEEDBACK_URL = '';
-const CHANGES = ['Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
+const CHANGES = ['Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -319,6 +319,10 @@ function placeW(w) {
   let ww = Math.min(w.w, COLS), hh = Math.min(w.h, ROWS);
   const x = clamp(w.x, 0, COLS - ww), y = clamp(w.y, 0, ROWS - hh);
   Object.assign(it.el.style, { left: x * cell + 'px', top: y * cell + 'px', width: ww * cell + 'px', height: hh * cell + 'px', zIndex: w.z || 1 });
+  const top = y * cell, bot = BH - (y + hh) * cell - 80; // leave room for the toolbar at the bottom
+  const hp = top >= 44 ? 'above' : bot >= 44 ? 'below' : 'inside';
+  const bp = hp !== 'below' && bot >= 52 ? 'below' : hp === 'below' && bot >= 96 ? 'below2' : hp === 'above' && top >= 96 ? 'above2' : hp !== 'above' && top >= 52 ? 'above' : 'inside';
+  it.el.dataset.hp = hp; it.el.dataset.bp = bp;
   if (it.onResize) try { it.onResize(); } catch (e) { console.error(e); }
 }
 function titleOf(w) { const d = W[w.type]; return (d.titleOf && d.titleOf(w.p)) || d.title; }
