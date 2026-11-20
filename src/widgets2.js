@@ -47,7 +47,7 @@ W.spinner = {
     let spinning = false;
     function showRes() {
       res.innerHTML = '';
-      if (!p.last) { res.appendChild(h('span', { class: 'muted', style: { fontWeight: 400 } }, 'Tap Spin')); return; }
+      if (!p.last) { return; }
       const s = p.sections.find(x => x.c === p.last.c) || { c: p.last.c, name: p.last.name };
       res.append(h('span', { style: { width: '1em', height: '1em', borderRadius: '.25em', background: s.c, flex: 'none' } }), h('span', {}, s.name + (p.labels === 'num' && p.last.num ? ' · ' + p.last.num : '')));
     }
@@ -296,7 +296,7 @@ W.groups = {
     }
     function draw() {
       const gs = GROUP_STATE.get(api.w.id); grid.innerHTML = '';
-      if (!gs) { grid.style.display = 'flex'; grid.style.alignItems = 'center'; grid.style.justifyContent = 'center'; grid.appendChild(h('div', { class: 'muted', style: { fontSize: cellFs(.5) } }, 'Tap Make groups')); return; }
+      if (!gs) { grid.style.display = 'flex'; grid.style.alignItems = 'center'; grid.style.justifyContent = 'center'; return; }
       grid.style.display = 'grid'; const bw = b.clientWidth || 600, bh = b.clientHeight || 400;
       const cols = clamp(Math.round(Math.sqrt(gs.length * bw / bh * .8)), 1, gs.length);
       grid.style.gridTemplateColumns = 'repeat(' + cols + ',minmax(0,1fr))';
@@ -362,7 +362,7 @@ W.questions = {
       h('div', { class: 'ctl' }, back, next, editOnly(btn('Restart', () => { reorder(); api.save(); draw(); }, 'sm')))));
     function draw() {
       back.disabled = p.pos <= 0;
-      if (p.pos < 0) { head.textContent = items.length + ' questions' + (p.shuffle ? ' · shuffled' : ''); q.innerHTML = ''; q.appendChild(h('span', { class: 'muted' }, 'Tap Next for the first one')); return; }
+      if (p.pos < 0) { head.textContent = items.length + ' questions' + (p.shuffle ? ' · shuffled' : ''); q.innerHTML = ''; q.appendChild(h('span', { class: 'muted' }, 'Ready')); return; }
       head.textContent = 'Question ' + (p.pos + 1) + ' of ' + items.length; q.innerHTML = fmtQ(items[p.order[p.pos]]);
     }
     draw();
@@ -419,7 +419,7 @@ W.plane = {
   mount(b, p, api) {
     let plot = false;
     const svgBox = h('div', { style: { position: 'absolute', inset: 0 } });
-    const plotB = editOnly(h('button', { class: 'b sm', style: { position: 'absolute', left: '8px', top: '6px', zIndex: 2, background: 'rgba(6,18,31,.85)' }, onClick: e => { e.stopPropagation(); plot = !plot; plotB.classList.toggle('on', plot); plotB.textContent = plot ? 'Plotting: tap the grid' : 'Plot points'; } }, 'Plot points'));
+    const plotB = editOnly(h('button', { class: 'b sm', style: { position: 'absolute', left: '8px', bottom: '6px', zIndex: 2, background: 'rgba(6,18,31,.85)' }, onClick: e => { e.stopPropagation(); plot = !plot; plotB.classList.toggle('on', plot); plotB.textContent = plot ? 'Plotting: tap the grid' : 'Plot points'; } }, 'Plot points'));
     b.append(svgBox, plotB);
     if (p.light) api.el.style.background = '#FFFFFF';
     let geo = null;

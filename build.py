@@ -3,8 +3,9 @@ import os
 R=os.path.dirname(os.path.abspath(__file__))+'/'
 css=open(R+'src/styles.css').read()
 qr=open(R+'vendor/qrcode.js').read()
-js='\n'.join(open(R+'src/'+f).read() for f in ['core.js','widgets1.js','widgets2.js'])
-icon=open(R+'icon.b64').read()
+js='\n'.join(open(R+'src/'+f).read() for f in ['icons.js','core.js','widgets1.js','widgets2.js','templates.js'])
+icon=open(R+'touch.b64').read()
+mark=open(R+'mark.b64').read()
 html=f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +16,8 @@ html=f'''<!DOCTYPE html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Class Board">
 <meta name="theme-color" content="#0B1F3A">
-<link rel="apple-touch-icon" href="data:image/png;base64,{icon}">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="data:image/png;base64,{icon}">
 <title>4 Example Classroom Board</title>
 <style>
@@ -28,7 +30,7 @@ html=f'''<!DOCTYPE html>
 {qr}
 </script>
 <script>
-{js}
+{js.replace('__MARK__', mark)}
 boot();
 </script>
 </body>

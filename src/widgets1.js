@@ -240,7 +240,7 @@ function parseSched(txt) {
 }
 const minTo12 = m => { const H = Math.floor(m / 60), M = m % 60; return ((H + 11) % 12 + 1) + ':' + pad2(M); };
 W.period = {
-  title: 'Period countdown', label: 'Period countdown', icon: 'bell', size: [10, 5], min: [5, 3],
+  title: 'Period countdown', label: 'Period countdown', icon: 'period', size: [10, 5], min: [5, 3],
   defaults: () => ({ sched: 'Period 1, 7:45, 8:35\nPeriod 2, 8:40, 9:30\nPeriod 3, 9:35, 10:25\nPeriod 4, 10:30, 11:20\nLunch, 11:25, 11:55\nPeriod 5, 12:00, 12:50\nPeriod 6, 12:55, 1:45\nPeriod 7, 1:50, 2:40', weekends: false }),
   clean(p) { p.sched = safeStr(p.sched, 3000); },
   mount(b, p, api) {
@@ -352,7 +352,7 @@ W.target = {
   mount(b, p, api) {
     const pt = (() => { const d = document.createElement('div'); try { d.contentEditable = 'plaintext-only'; return d.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true'; } catch (e) { return 'true'; } })();
     const sz = k => 'calc(var(--cell) * ' + k + ' * var(--ts) * ' + (p.size || 1) + ')';
-    const stdEl = h('span', { contenteditable: pt, spellcheck: 'false', 'data-ph': '8.EE.C.8', class: 'txtph', style: { background: 'rgba(93,169,255,.18)', color: 'var(--accent2)', borderRadius: '8px', padding: '.1em .5em', fontSize: sz(.42), fontWeight: 600, outline: 'none', minWidth: '3em', WebkitUserSelect: 'text', userSelect: 'text' } }, p.std);
+    const stdEl = h('span', { contenteditable: pt, spellcheck: 'false', 'data-ph': 'Standard', class: 'txtph', style: { background: 'rgba(93,169,255,.18)', color: 'var(--accent2)', borderRadius: '8px', padding: '.1em .5em', fontSize: sz(.42), fontWeight: 600, outline: 'none', minWidth: '3em', WebkitUserSelect: 'text', userSelect: 'text' } }, p.std);
     const tEl = h('div', { contenteditable: pt, spellcheck: 'false', 'data-ph': 'I can…', style: { fontSize: sz(.78), fontWeight: 600, lineHeight: 1.25, outline: 'none', WebkitUserSelect: 'text', userSelect: 'text', minHeight: '1.2em' } }, p.target);
     const ag = h('div', { contenteditable: pt, spellcheck: 'false', 'data-ph': 'Agenda: one item per line', style: { fontSize: sz(.5), lineHeight: 1.45, outline: 'none', whiteSpace: 'pre-wrap', color: '#DCE8F8', WebkitUserSelect: 'text', userSelect: 'text', minHeight: '1.2em', borderTop: '1px solid rgba(156,200,255,.2)', paddingTop: '.5em', display: p.showAgenda ? '' : 'none' } }, p.agenda);
     [stdEl, tEl, ag].forEach(n => { n.classList.add('ph'); n.addEventListener('input', () => { p.std = stdEl.innerText.trim(); p.target = tEl.innerText; p.agenda = ag.innerText; api.save(); }); });
@@ -427,7 +427,7 @@ W.stoplight = {
     });
     b.appendChild(h('div', { class: 'fill', style: { flexDirection: v ? 'column' : 'row', gap: v ? '3cqh' : '4cqw', padding: '2cqmin' } }, house, lab));
     function draw() {
-      Object.keys(lights).forEach(k => { const on = p.on === k; lights[k].style.background = on ? C[k][0] : C[k][1]; lights[k].style.boxShadow = on ? '0 0 6cqmin ' + C[k][0] : 'none'; lights[k].setAttribute('aria-pressed', String(on)); });
+      Object.keys(lights).forEach(k => { const on = p.on === k; lights[k].style.background = on ? C[k][0] : C[k][1]; lights[k].style.boxShadow = on ? 'inset 0 0 0 0.7cqmin rgba(255,255,255,.45)' : 'none'; lights[k].setAttribute('aria-pressed', String(on)); });
       lab.textContent = p.on ? (p.labels[p.on] || '') : ''; lab.style.color = p.on ? C[p.on][2] : 'var(--muted)';
     }
     draw();
@@ -494,7 +494,7 @@ W.volume = {
     }
     function stopMic() { cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; if (ctx) ctx.close().catch(() => { }); ctx = null; goalMark.style.display = 'none'; draw(p.level); }
     api.cleanup(stopMic);
-    if (p.mode === 'mic') { draw(0); word.textContent = 'Tap Start listening'; }
+    if (p.mode === 'mic') { draw(0); word.textContent = ''; }
   },
   settings(f, p) {
     f.chips('Mode', [['set', 'I set the level'], ['mic', 'Listen with the mic']], () => p.mode, v => p.mode = v);

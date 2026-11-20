@@ -21,7 +21,7 @@ svg{display:block}
 #ink{position:absolute;inset:0;pointer-events:none;z-index:5000}
 body.drawing #ink{pointer-events:auto;touch-action:none;cursor:crosshair}
 #empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none;text-align:center;padding:20px}
-#empty button{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:0;background:var(--accent);color:var(--navy);font-size:48px;line-height:1;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#empty > button{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:0;background:var(--accent);color:var(--navy);font-size:48px;line-height:1;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 #empty .t1{font-size:22px;font-weight:500}
 #empty .t2{font-size:15px;color:var(--muted)}
 body.present #empty{display:none}
@@ -173,3 +173,30 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .cp .sw.on{border-color:#fff;box-shadow:0 0 0 3px var(--accent)}
 .cp input[type=color]{width:56px;height:44px;border:2px solid rgba(156,200,255,.5);border-radius:12px;background:transparent;padding:2px;cursor:pointer}
 .cp .lbl{font-size:13px;color:var(--muted);width:100%}
+
+/* ===== v1.2 restyle: quieter cards ===== */
+.wg{border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.28);border-color:rgba(156,200,255,.2);transition:none}
+.wg.sel{outline:2px solid var(--accent);outline-offset:0}
+.wg.dragging{box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.wg-head{position:absolute;left:0;right:0;top:0;z-index:6;display:none;height:38px;background:rgba(6,16,30,.92);color:#C9D7EA;border-radius:8px 8px 0 0;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.wg.sel .wg-head{display:flex}
+.wg-gear{display:none!important}
+.wg-tools{display:flex}
+.wg-tools button{background:transparent;color:#C9D7EA}
+.wg-tools button:hover{background:rgba(255,255,255,.12)}
+.wg.lightcard .wg-tools button{background:transparent;color:#C9D7EA}
+.wg:not(.sel) .wg-rs{display:none}
+.wg-rs::after{opacity:1;border-color:var(--accent)}
+.wg.sel .txt-bar{top:42px}
+.wg.sel.editing .txt{padding-top:92px}
+.b{border-radius:8px}
+.b:active{transform:none;filter:brightness(.92)}
+#dock{border-radius:14px;padding:4px 6px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#dock button{border-radius:10px}
+.sheet{animation:none}
+#popup{animation:fadein .15s ease-out;border-radius:14px}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+#mark{position:absolute;left:calc(var(--cell)*.35);bottom:calc(var(--cell)*.3);height:calc(var(--cell)*1.15);opacity:.9;pointer-events:none;z-index:0}
+#empty .tpls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;pointer-events:auto;margin-top:6px}
+#empty .tpls .b{background:rgba(6,16,30,.6)}
+.tile{border-radius:10px}

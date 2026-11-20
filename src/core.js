@@ -1,6 +1,9 @@
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
+const VERSION = '1.2';
+const FEEDBACK_URL = '';
+const CHANGES = ['Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -47,7 +50,7 @@ function colorPicker(get, set, presets, opts) {
     const inp = h('input', { type: 'color', 'aria-label': 'Pick any color', value: get() || opts.fallback || '#0B1F3A' });
     inp.addEventListener('input', () => set(inp.value));
     inp.addEventListener('change', () => { set(inp.value); draw(); });
-    wrap.append(inp, h('span', { class: 'muted', style: { fontSize: '13px' } }, '← any color'));
+    wrap.append(inp);
   };
   draw(); return wrap;
 }
@@ -65,6 +68,7 @@ const FRAMED = (() => { try { return window.self !== window.top; } catch (e) { r
 
 /* ---------- icons ---------- */
 const IC = {
+  _: '',
   plus: '<path d="M12 5v14M5 12h14"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   timer: '<path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/>',
@@ -109,6 +113,7 @@ const IC = {
   ext: '<path d="M14 4h6v6M20 4L10 14M18 14v6H4V6h6"/>',
   check: '<path d="M5 12l5 5L20 7"/>'
 };
+Object.assign(IC, LUCIDE);
 function icon(name, size) {
   size = size || 22;
   return h('span', { style: { display: 'inline-flex' }, html: '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[name] || '') + '</svg>' });
@@ -132,8 +137,8 @@ const Images = {
   putWithId(id, data) { this.mem.set(id, data); try { localStorage.setItem('cb4.img.' + id, data); } catch (e) { } },
   gc() { // remove images no board uses
     try {
-      const used = new Set(); const scan = b => { if (!b) return; if (b.bg && b.bg.photo) used.add(b.bg.photo); (b.widgets || []).forEach(w => { if (w.p && w.p.img) used.add(w.p.img); }); };
-      scan(board); Object.values(savedBoards()).forEach(scan);
+      const used = new Set(); const scan0 = b => { if (!b) return; if (b.bg && b.bg.photo) used.add(b.bg.photo); (b.widgets || []).forEach(w => { if (w.p && w.p.img) used.add(w.p.img); }); };
+      const scan = scan0; scan(board); Object.values(savedBoards()).forEach(scan); backups().forEach(x => scan(x.board));
       for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k && k.indexOf('cb4.img.') === 0 && !used.has(k.slice(8))) localStorage.removeItem(k); }
     } catch (e) { }
   }
@@ -219,6 +224,7 @@ let saveTimer = null, saveWarned = false;
 
 function saveCurrent(now) {
   board.updated = Date.now();
+  if (Date.now() - lastBackup > 15 * 60000) backup();
   clearTimeout(saveTimer);
   const go = () => {
     if (!LS.set('current', board) && !saveWarned && !Cloud.ready) { saveWarned = true; toast(LS_OK ? 'This device is out of storage. Remove an image to keep saving.' : 'This browser isn’t letting the board save here. Your board will reset if you close the page.', 5000); }
@@ -227,6 +233,16 @@ function saveCurrent(now) {
   if (now) go(); else saveTimer = setTimeout(go, 400);
 }
 
+let lastBackup = 0;
+function backups() { return LS.get('backups', []) || []; }
+function backup(force) {
+  if (!board.widgets.length) return;
+  const list = backups(), s = JSON.stringify(board);
+  lastBackup = Date.now();
+  if (list[0] && JSON.stringify(list[0].board) === s) return;
+  list.unshift({ t: Date.now(), board: JSON.parse(s) });
+  LS.set('backups', list.slice(0, 5));
+}
 const undoStack = [];
 const snap = () => JSON.stringify(board);
 function pushUndo(s) { undoStack.push(s); if (undoStack.length > 60) undoStack.shift(); refreshDock(); }
@@ -246,9 +262,11 @@ const widgetsEl = h('div', { id: 'widgets' });
 const inkCanvas = h('canvas', { id: 'ink' });
 const emptyEl = h('div', { id: 'empty' },
   h('button', { 'aria-label': 'Add a widget', onClick: () => openAdd() }, '+'),
-  h('div', { class: 't1' }, 'Tap + to add your first widget'),
-  h('div', { class: 't2' }, 'Drag a widget by its top bar · pull the corner to resize'));
-boardEl.append(bgPhoto, gridLayer, axesLayer, widgetsEl, inkCanvas, emptyEl);
+  h('div', { class: 't1' }, 'Tap + to add a widget'),
+  h('div', { class: 't2' }, 'or start from a template'),
+  h('div', { class: 'tpls' }));
+const markEl = h('img', { id: 'mark', alt: '', src: 'data:image/png;base64,__MARK__' });
+boardEl.append(bgPhoto, gridLayer, axesLayer, markEl, widgetsEl, inkCanvas, emptyEl);
 stage.appendChild(boardEl);
 
 function layout() {
@@ -285,6 +303,7 @@ function applyBg() {
     gridLayer.style.backgroundImage = 'linear-gradient(' + d.major + ' 1px,transparent 1px),linear-gradient(90deg,' + d.major + ' 1px,transparent 1px),linear-gradient(' + d.minor + ' 1px,transparent 1px),linear-gradient(90deg,' + d.minor + ' 1px,transparent 1px)';
     gridLayer.style.backgroundSize = M + 'px ' + M + 'px,' + M + 'px ' + M + 'px,' + c + 'px ' + c + 'px,' + c + 'px ' + c + 'px';
   } else gridLayer.style.backgroundImage = 'none';
+  markEl.style.display = b.logo === false ? 'none' : '';
   axesLayer.innerHTML = '';
   if (b.axes) {
     const cx = Math.round(COLS / 2) * cell, cy = Math.round(ROWS / 2) * cell;
@@ -358,6 +377,7 @@ function renderAll() {
   layout(); Ink.redraw(); refreshEmpty();
 }
 function refreshEmpty() { emptyEl.style.display = board.widgets.length ? 'none' : 'flex'; }
+function drawTemplates() { const t = emptyEl.querySelector('.tpls'); t.innerHTML = ''; TEMPLATES.forEach(tp => t.appendChild(h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); toast('Loaded the ' + tp.name + ' template'); } }, tp.name))); }
 function topZ() { return board.widgets.reduce((m, w) => Math.max(m, w.z || 0), 0); }
 function findSpot(wd, ht) {
   const occ = (x, y) => board.widgets.some(o => x < o.x + o.w && x + wd > o.x && y < o.y + o.h && y + ht > o.y);
@@ -629,6 +649,7 @@ function openBoardPanel() {
     f.toggle('Grid lines', () => board.bg.grid !== false, v => { board.bg.grid = v; });
     f.toggle('Snap widgets to the grid', () => board.bg.snap !== false, v => { board.bg.snap = v; });
     f.toggle('Show x- and y-axes', () => !!board.bg.axes, v => { board.bg.axes = v; });
+    f.toggle('Show the 4 Example logo in the corner', () => board.bg.logo !== false, v => { board.bg.logo = v; });
     f.sec('Display');
     f.chips('Board shape', [['fit', 'Fill this screen'], ['16:9', 'Match the TV (16:9)']], () => board.aspect || 'fit', v => { board.aspect = v; layout(); });
     f.note('“Match the TV” keeps the same layout on the iPad, laptop and TV. “Fill this screen” uses every inch of the device you’re on.');
@@ -659,6 +680,7 @@ function updateSaved() {
 }
 function deleteSaved(id) { const all = savedBoards(); delete all[id]; LS.set('boards', all); Cloud.del('board-' + id); Images.gc(); }
 function loadBoard(b) {
+  backup(true);
   pushUndo(snap());
   board = normalizeBoard(clone(b)) || newBoard(); selected = null;
   renderAll(); saveCurrent(true);
@@ -685,6 +707,13 @@ function openBoards() {
         confirmBtn('Delete', () => { deleteSaved(b.id); openSheet.rebuild(); })));
     });
     f.note(Cloud.ready ? 'Your boards sync to your Claude account, so they show up on your iPad and laptop.' : 'Boards are saved on this device. Use Export and Import to move a board to another device or share it with a colleague.');
+    f.sec('Starter boards');
+    f.note('Ready-made layouts to start from. Loading one replaces what’s on the board (Undo brings it back).');
+    TEMPLATES.forEach(tp => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, tp.name), h('div', { class: 'sub' }, tp.desc)), h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); closeSheet(); toast('Loaded the ' + tp.name + ' template'); } }, 'Load'))));
+    f.sec('Earlier versions of this board');
+    const bk = backups();
+    if (!bk.length) f.note('The board keeps its last 5 versions automatically (when you open it, every 15 minutes while you work, and before you load another board).');
+    bk.forEach(x => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (x.board.name || 'Board') + ' · ' + new Date(x.t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })), h('div', { class: 'sub' }, (x.board.widgets || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { const b = normalizeBoard(clone(x.board)); if (b) { loadBoard(b); closeSheet(); toast('Restored · tap Undo to go back'); } } }, 'Restore'))));
     f.sec('Share or move a board');
     f.buttons([['Export this board', exportBoard], ['Import a board file', importBoard]]);
     f.note('An exported board file includes its images. Class lists for the name picker are never included; they stay on this device.');
@@ -741,7 +770,7 @@ function normalizeBoard(b) {
   n.name = typeof b.name === 'string' ? b.name.slice(0, 80) : n.name;
   n.updated = +b.updated || Date.now();
   const bg = b.bg || {};
-  n.bg = { kind: BGS[bg.kind] ? bg.kind : 'grid', photo: typeof bg.photo === 'string' ? bg.photo.slice(0, 40) : null, grid: bg.grid !== false, snap: bg.snap !== false, axes: !!bg.axes, color: isColor(bg.color) ? bg.color : null };
+  n.bg = { kind: BGS[bg.kind] ? bg.kind : 'grid', photo: typeof bg.photo === 'string' ? bg.photo.slice(0, 40) : null, grid: bg.grid !== false, snap: bg.snap !== false, axes: !!bg.axes, color: isColor(bg.color) ? bg.color : null, logo: bg.logo !== false };
   n.aspect = b.aspect === '16:9' ? '16:9' : 'fit';
   n.scale = clamp(+b.scale || 1, 0.6, 1.8);
   n.widgets = b.widgets.filter(w => w && W[w.type]).slice(0, 120).map(w => {
@@ -859,9 +888,12 @@ function openHelp() {
       'Timer sounds need one tap on the board after it loads. That’s an iPad rule, not a bug.'
     ].forEach(t => f.note('• ' + t));
     f.sec('Put it on the iPad Home Screen');
-    f.note('Open the board in Safari, tap Share › Add to Home Screen. Once the board lives on its own website, it opens full screen like an app.');
+    f.note('Open jbhill98-bgcs.github.io/4ex-agendaboard in Safari, tap Share (the square with the up arrow), then Add to Home Screen › Add. It then opens full screen like an app.');
+    f.sec('Version ' + VERSION + ' · What’s new');
+    CHANGES.forEach(c => f.note('• ' + c));
     f.sec('About');
-    f.note('4 Example Classroom Board. Boards and class lists are saved on this device' + (Cloud.ready ? ', and boards also sync to your Claude account.' : '.'));
+    f.note('4 Example Classroom Board. Boards and class lists are saved on this device' + (Cloud.ready ? ', and boards also sync to your Claude account.' : '.') + ' Questions or ideas? Reach out to Joshua.');
+    if (FEEDBACK_URL) f.node(h('a', { class: 'b pri', href: FEEDBACK_URL, target: '_blank', rel: 'noopener', style: { textDecoration: 'none', marginTop: '6px' } }, 'Send feedback'));
   });
 }
 
@@ -935,7 +967,11 @@ function boot() {
   document.body.append(stage, dock, inkbar, exitBtn, toastEl, popupEl, tourEl);
   renderAll(); refreshDock();
   if (!prefs.tour) showTour(0);
-  else toast('Tap anywhere to turn on sounds', 3500);
+  else if (prefs.seen !== VERSION) toast('Updated to version ' + VERSION + ' · see Help for what’s new', 4000);
+  prefs.seen = VERSION; savePrefs();
+  backup(true);
+  drawTemplates();
+  if (!FRAMED && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
   Cloud.init();
   if (window.claude && typeof window.claude.use === 'function') window.claude.use('downloads').then(d => { Downloads = d; }).catch(() => { });
   setTimeout(() => Images.gc(), 5000);

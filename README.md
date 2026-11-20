@@ -9,6 +9,9 @@ A customizable digital whiteboard for the classroom. It runs in Safari or Chrome
 - `src/`: the source (styles, board core, widgets).
 - `vendor/qrcode.js`: qrcode-generator 1.4.4 by Kazuhiko Arase (MIT License), used for the QR code widget.
 - `build.py`: rebuilds `index.html` from `src/` (`python3 build.py`).
+- `sw.js`: lets the board open offline after the first visit.
+- `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `manifest.webmanifest`: Home Screen / app icons.
+- Icons in the app are from Lucide (ISC License).
 
 ## Notes
 - Boards, saved boards and class lists are stored in the browser on each device. Nothing is sent to a server.
