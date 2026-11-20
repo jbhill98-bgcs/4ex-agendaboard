@@ -61,27 +61,57 @@ W.organizer = {
     const cell = (i, extra) => ceField(D.c[i] || '', 'Type here…', v => { D.c[i] = v; api.save(); }, Object.assign({ fontSize: sz(.48), lineHeight: 1.35, flex: 1, overflow: 'auto', padding: '.3em .4em' }, extra || {}));
     const root = h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--cell)*.3)', gap: 'calc(var(--cell)*.2)' } });
     if (p.title) root.appendChild(h('div', { style: { fontSize: sz(.7), fontWeight: 700, textAlign: 'center' } }, p.title));
-    const line = '0.12em solid var(--accent)';
-    if (p.kind === 'tchart' || p.kind === 'kwl') {
-      const n = K.cells, g = h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(' + n + ',minmax(0,1fr))', gridTemplateRows: 'auto minmax(0,1fr)' } });
-      for (let i = 0; i < n; i++) g.appendChild(h('div', { style: { borderBottom: line, borderLeft: i ? line : 'none', padding: '.25em .3em .35em', fontSize: sz(.55) } }, head(i)));
-      for (let i = 0; i < n; i++) g.appendChild(h('div', { style: { borderLeft: i ? line : 'none', display: 'flex', minHeight: 0 } }, cell(i)));
+    const L = '3px solid var(--accent)';
+    let onResize = null;
+    if (p.kind === 'tchart') {
+      const g = h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gridTemplateRows: 'auto minmax(0,1fr)' } });
+      for (let i = 0; i < 2; i++) g.appendChild(h('div', { style: { borderBottom: L, padding: '.2em .4em .35em' } }, head(i)));
+      for (let i = 0; i < 2; i++) g.appendChild(h('div', { style: { borderLeft: i ? L : 'none', display: 'flex', minHeight: 0, paddingTop: '.2em' } }, cell(i)));
+      root.appendChild(g);
+    } else if (p.kind === 'kwl') {
+      const B = '2px solid var(--accent)';
+      const g = h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gridTemplateRows: 'auto minmax(0,1fr)', border: B, borderRadius: '8px', overflow: 'hidden' } });
+      for (let i = 0; i < 3; i++) g.appendChild(h('div', { style: { borderLeft: i ? B : 'none', borderBottom: B, background: 'rgba(93,169,255,.14)', padding: '.3em .4em', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, head(i)));
+      for (let i = 0; i < 3; i++) g.appendChild(h('div', { style: { borderLeft: i ? B : 'none', display: 'flex', minHeight: 0 } }, cell(i)));
       root.appendChild(g);
     } else if (p.kind === 'frayer') {
-      const g = h('div', { style: { flex: 1, minHeight: 0, position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', border: line, borderRadius: '6px' } });
-      [0, 1, 2, 3].forEach(i => g.appendChild(h('div', { style: { display: 'flex', flexDirection: i < 2 ? 'column' : 'column-reverse', minHeight: 0, borderRight: i % 2 === 0 ? line : 'none', borderBottom: i < 2 ? line : 'none', padding: '.3em' } }, h('div', { style: { textAlign: i % 2 ? 'right' : 'left' } }, head(i)), cell(i, i < 2 ? { paddingBottom: '1.8em' } : { paddingTop: '1.8em' }))));
-      const wordEl = ceField(D.h[4] || '', 'Word', v => { D.h[4] = v; api.save(); }, { fontWeight: 700, fontSize: sz(.75), textAlign: 'center', minWidth: '4em' });
-      g.appendChild(h('div', { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', background: 'var(--card)', border: line, borderRadius: '999px', padding: '.35em 1.1em', maxWidth: '46%' } }, wordEl));
+      const B = '2px solid var(--accent)';
+      const g = h('div', { style: { flex: 1, minHeight: 0, position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', border: B, borderRadius: '8px' } });
+      [0, 1, 2, 3].forEach(i => {
+        const right = i % 2 === 1, bottom = i > 1;
+        const hd = head(i); hd.style.textAlign = right ? 'right' : 'left'; hd.style.fontSize = sz(.5);
+        g.appendChild(h('div', { style: { display: 'flex', flexDirection: bottom ? 'column-reverse' : 'column', minHeight: 0, borderRight: right ? 'none' : B, borderBottom: bottom ? 'none' : B, padding: '.35em .5em' } },
+          hd, cell(i, Object.assign({ textAlign: right ? 'right' : 'left', padding: '.2em 0' }, bottom ? { paddingTop: '1.7em' } : { paddingBottom: '1.7em' }))));
+      });
+      const wordEl = ceField(D.h[4] || '', 'Word', v => { D.h[4] = v; api.save(); }, { fontWeight: 700, fontSize: sz(.75), textAlign: 'center', minWidth: '3em' });
+      g.appendChild(h('div', { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', background: 'var(--card)', border: B, borderRadius: '12px', padding: '.25em .9em', maxWidth: '44%', zIndex: 1 } }, wordEl));
       root.appendChild(g);
     } else {
       const v = h('div', { style: { flex: 1, minHeight: 0, position: 'relative' } });
-      const circ = (l, c) => h('div', { style: { position: 'absolute', top: '2%', bottom: '2%', left: l, width: '58%', borderRadius: '50%', border: '0.12em solid ' + c, background: c + '1F', fontSize: sz(.5) } });
-      v.append(circ('3%', '#5DA9FF'), circ('39%', '#F5C842'));
-      const reg = (l, w, i, hd) => h('div', { style: { position: 'absolute', left: l, width: w, top: '10%', bottom: '10%', display: 'flex', flexDirection: 'column', gap: '.2em', zIndex: 1 } }, hd, cell(i, { textAlign: 'center' }));
-      v.append(reg('9%', '28%', 0, head(0)), reg('39%', '22%', 2, head(2)), reg('63%', '28%', 1, head(1)));
+      const cA = '#5DA9FF', cB = '#F5C842';
+      const c1 = h('div', { style: { position: 'absolute', borderRadius: '50%', border: '3px solid ' + cA, background: cA + '1C', boxSizing: 'border-box' } });
+      const c2 = h('div', { style: { position: 'absolute', borderRadius: '50%', border: '3px solid ' + cB, background: cB + '1C', boxSizing: 'border-box' } });
+      const t = [head(0), head(1), head(2)].map((hd, i) => { hd.style.color = i === 0 ? cA : i === 1 ? cB : 'var(--text)'; return h('div', { style: { position: 'absolute', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' } }, hd); });
+      const rg = [cell(0, { textAlign: 'center' }), cell(1, { textAlign: 'center' }), cell(2, { textAlign: 'center' })].map(c => { c.style.flex = 'none'; return h('div', { style: { position: 'absolute', display: 'flex', flexDirection: 'column', zIndex: 1 } }, c); });
+      v.append(c1, c2, ...t, ...rg);
       root.appendChild(v);
+      const place = (el, x, y, w, hh) => Object.assign(el.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: hh + 'px' });
+      onResize = () => {
+        const Wd = v.clientWidth, Hd = v.clientHeight; if (!Wd || !Hd) return;
+        const tH = parseFloat(getComputedStyle(t[0].firstChild).fontSize) * 2.6;
+        const r = Math.max(30, Math.min((Hd - tH - 6) / 2, (Wd - 8) / 3.1));
+        const cx1 = Wd / 2 - .55 * r, cx2 = Wd / 2 + .55 * r, cy = tH + 4 + r;
+        place(c1, cx1 - r, cy - r, 2 * r, 2 * r); place(c2, cx2 - r, cy - r, 2 * r, 2 * r);
+        place(t[0], Wd / 2 - 1.5 * r, 0, r, tH); place(t[1], Wd / 2 + .5 * r, 0, r, tH); place(t[2], Wd / 2 - .42 * r, cy - .74 * r, .84 * r, tH * .6);
+        t[2].style.alignItems = 'flex-start';
+        place(rg[0], Wd / 2 - 1.45 * r, cy - .62 * r, .95 * r, 1.3 * r);
+        place(rg[2], Wd / 2 - .4 * r, cy - .4 * r, .8 * r, 1.05 * r);
+        place(rg[1], Wd / 2 + .5 * r, cy - .62 * r, .95 * r, 1.3 * r);
+      };
+      requestAnimationFrame(onResize);
     }
     b.appendChild(root);
+    return { onResize };
   },
   settings(f, p) {
     f.chips('Type', Object.keys(ORG).map(k => [k, ORG[k].name]), () => p.kind, v => p.kind = v);
@@ -139,7 +169,7 @@ W.labdata = {
     const nc = p.ys.length + 1;
     p.rows.forEach(r => { while (r.length < nc) r.push(''); r.length = nc; });
     const wrap = h('div', { style: { position: 'absolute', inset: 0, display: 'flex', gap: 'calc(var(--cell)*.3)', padding: 'calc(var(--cell)*.3)' } });
-    const tableBox = h('div', { class: 'noLP', style: { flex: 'none', overflow: 'auto', display: p.table ? 'flex' : 'none', flexDirection: 'column', gap: '6px' } });
+    const tableBox = h('div', { class: 'noLP', style: { flex: 'none', width: 'max-content', overflow: 'auto', display: p.table ? 'flex' : 'none', flexDirection: 'column', gap: '6px' } });
     const graph = h('div', { style: { flex: 1, minWidth: 0, minHeight: 0, position: 'relative' } });
     wrap.append(tableBox, graph); b.appendChild(wrap);
     const cellStyle = { width: '100%', minWidth: '4.2em', boxSizing: 'border-box', border: '1px solid rgba(156,200,255,.3)', background: 'rgba(0,0,0,.18)', color: 'var(--text)', borderRadius: '6px', padding: '.3em .4em', fontSize: '15px', fontFamily: 'inherit', textAlign: 'center' };
@@ -164,7 +194,7 @@ W.labdata = {
       if (x0 >= 0) x0 = 0; if (y0 >= 0) y0 = 0; if (x1 === x0) x1 = x0 + 1; if (y1 === y0) y1 = y0 + 1;
       const sx = niceStep(x1 - x0, 6), sy = niceStep(y1 - y0, 5);
       x0 = Math.floor(x0 / sx) * sx; x1 = Math.ceil(x1 / sx) * sx; y0 = Math.floor(y0 / sy) * sy; y1 = Math.ceil(y1 / sy) * sy;
-      const fsz = clamp(Math.min(Wd, Hd) * .045, 11, 16), L = fsz * 4.2, B = fsz * 3.4, T = p.title ? fsz * 2.2 : fsz * .8, R = fsz;
+      const fsz = clamp(Math.min(Wd, Hd) * .045, 11, 16), L = fsz * (p.ys.length === 1 ? 4.2 : 2.8), B = fsz * 3.4, T = p.title ? fsz * 2.2 : fsz * .8, R = fsz;
       const X = v => L + (v - x0) / (x1 - x0) * (Wd - L - R), Y = v => Hd - B - (v - y0) / (y1 - y0) * (Hd - B - T);
       let g = '';
       for (let v = x0; v <= x1 + sx / 2; v += sx) g += '<line x1="' + X(v) + '" y1="' + Y(y0) + '" x2="' + X(v) + '" y2="' + Y(y1) + '" stroke="var(--track)" /><text x="' + X(v) + '" y="' + (Y(y0) + fsz * 1.3) + '" font-size="' + fsz + '" text-anchor="middle" fill="' + ink + '" opacity=".8">' + fmtN(v) + '</text>';
@@ -234,19 +264,34 @@ W.timeline = {
       if (!ev.length) { area.appendChild(h('div', { class: 'muted', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' } }, 'Add events with a date or year, like “1776” or “500 BCE”.')); return; }
       ev.sort((a, b) => (a.n == null ? 1e9 : a.n) - (b.n == null ? 1e9 : b.n) || a.i - b.i);
       const nums = ev.filter(x => x.n != null).map(x => x.n), lo = Math.min(...nums), hi = Math.max(...nums);
-      const pos = (x, j) => p.scale && hi > lo && x.n != null ? (x.n - lo) / (hi - lo) : (ev.length === 1 ? .5 : j / (ev.length - 1));
-      const W0 = area.clientWidth || 600, M = .07;
-      area.appendChild(h('div', { style: { position: 'absolute', left: (M * 100 - 3) + '%', right: (M * 100 - 3) + '%', top: 'calc(50% - 2px)', height: '4px', background: 'var(--accent)', borderRadius: '2px' } }));
-      const lastX = { up: [-1, -1], dn: [-1, -1] };
-      ev.forEach((x, j) => {
-        const f = M + pos(x, j) * (1 - 2 * M), px = f * W0, side = j % 2 === 0 ? 'up' : 'dn';
-        const tier = (px - lastX[side][0]) < W0 * .16 && lastX[side][1] === 0 ? 1 : 0; lastX[side] = [px, tier];
-        const off = (tier ? 46 : 12);
-        area.appendChild(h('div', { style: { position: 'absolute', left: 'calc(' + (f * 100) + '% - 7px)', top: 'calc(50% - 7px)', width: '14px', height: '14px', borderRadius: '50%', background: '#F5C842', border: '2px solid #0B1F3A', zIndex: 2 } }));
-        area.appendChild(h('div', { style: { position: 'absolute', left: 'calc(' + (f * 100) + '% - 1px)', width: '2px', background: 'var(--accent2)', opacity: .6, top: side === 'up' ? 'calc(' + (50 - off) + '%)' : '50%', height: off + '%' } }));
-        const box = h('div', { style: { position: 'absolute', width: 'max-content', maxWidth: Math.max(110, W0 * .2) + 'px', fontSize: 'calc(var(--cell)*' + (.42 * k) + '*var(--ts))', lineHeight: 1.25, textAlign: 'center', transform: 'translateX(' + (f < .12 ? '-10%' : f > .88 ? '-90%' : '-50%') + ')' + (side === 'up' ? ' translateY(-100%)' : ''), left: (f * 100) + '%', top: side === 'up' ? 'calc(' + (50 - off) + '% - 4px)' : 'calc(' + (50 + off) + '% + 4px)' } },
-          h('div', { style: { fontWeight: 700, color: 'var(--accent2)' } }, x.e.d), h('div', {}, x.e.t));
-        area.appendChild(box);
+      const Wd = area.clientWidth, Hd = area.clientHeight; if (!Wd || !Hd) return;
+      const M = Math.max(30, Wd * .06), yMid = Hd / 2, stem = 14, gap = 10;
+      const xOf = (x, j) => M + (p.scale && hi > lo && x.n != null ? (x.n - lo) / (hi - lo) : (ev.length === 1 ? .5 : j / (ev.length - 1))) * (Wd - 2 * M);
+      let mul = 1, layout = null;
+      for (let tries = 0; tries < 6; tries++) {
+        area.innerHTML = '';
+        const boxes = ev.map(x => { const bx = h('div', { style: { position: 'absolute', left: 0, top: 0, visibility: 'hidden', width: 'max-content', maxWidth: Math.max(120, Wd * .2) + 'px', fontSize: 'calc(var(--cell)*' + (.42 * k * mul) + '*var(--ts))', lineHeight: 1.22, textAlign: 'center', padding: '2px 4px' } }, h('div', { style: { fontWeight: 700, color: 'var(--accent2)' } }, x.e.d), x.e.t ? h('div', {}, x.e.t) : null); area.appendChild(bx); return bx; });
+        const lanes = { u0: -1e9, d0: -1e9, u1: -1e9, d1: -1e9 }, hMax = { u0: 0, d0: 0, u1: 0, d1: 0 };
+        layout = ev.map((x, j) => {
+          const bw = boxes[j].offsetWidth, bh = boxes[j].offsetHeight, cx = xOf(x, j);
+          const left = clamp(cx - bw / 2, 2, Wd - bw - 2);
+          let lane = ['u0', 'd0', 'u1', 'd1'].find(l => left > lanes[l] + 8);
+          if (!lane) lane = ['u0', 'd0', 'u1', 'd1'].sort((a, b) => lanes[a] - lanes[b])[0];
+          lanes[lane] = left + bw; hMax[lane] = Math.max(hMax[lane], bh);
+          return { cx, left, bw, bh, lane, box: boxes[j] };
+        });
+        const top = l => l === 'u0' ? yMid - stem - hMax.u0 : l === 'd0' ? yMid + stem : l === 'u1' ? yMid - stem - hMax.u0 - gap - hMax.u1 : yMid + stem + hMax.d0 + gap;
+        layout.forEach(o => { o.top = o.lane[0] === 'u' ? top(o.lane) + (hMax[o.lane] - o.bh) : top(o.lane); });
+        const ok = layout.every(o => o.top >= 2 && o.top + o.bh <= Hd - 2);
+        if (ok || mul < .55) break;
+        mul *= .85;
+      }
+      area.appendChild(h('div', { style: { position: 'absolute', left: (M - 14) + 'px', right: (M - 14) + 'px', top: (yMid - 2) + 'px', height: '4px', background: 'var(--accent)', borderRadius: '2px' } }));
+      layout.forEach(o => {
+        const up = o.lane[0] === 'u', y1 = up ? o.top + o.bh : yMid, y2 = up ? yMid : o.top;
+        area.appendChild(h('div', { style: { position: 'absolute', left: (o.cx - 1) + 'px', top: y1 + 'px', height: Math.max(0, y2 - y1) + 'px', width: '2px', background: 'var(--accent2)', opacity: .55 } }));
+        area.appendChild(h('div', { style: { position: 'absolute', left: (o.cx - 7) + 'px', top: (yMid - 7) + 'px', width: '14px', height: '14px', borderRadius: '50%', background: '#F5C842', border: '2px solid #0B1F3A', boxSizing: 'border-box', zIndex: 2 } }));
+        Object.assign(o.box.style, { left: o.left + 'px', top: o.top + 'px', visibility: 'visible' });
       });
     }
     requestAnimationFrame(draw);
