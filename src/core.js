@@ -1,9 +1,9 @@
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
-const VERSION = '1.3';
+const VERSION = '1.4';
 const FEEDBACK_URL = '';
-const CHANGES = ['Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
+const CHANGES = ['New Agenda widget: a titled numbered or bulleted list you can check off.', 'Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -608,7 +608,7 @@ function openSettings(id) {
 /* ---------- add drawer ---------- */
 const CATS = [
   ['Time', ['clock', 'timer', 'stopwatch', 'date', 'calendar', 'countdown', 'period']],
-  ['Classroom', ['text', 'sticky', 'target', 'reminders', 'stoplight', 'volume', 'sign', 'image', 'qr']],
+  ['Classroom', ['text', 'sticky', 'agenda', 'target', 'reminders', 'stoplight', 'volume', 'sign', 'image', 'qr']],
   ['Math & games', ['spinner', 'dice', 'coin', 'random', 'names', 'groups', 'score', 'questions', 'plane', 'desmos', 'youtube']]
 ];
 function openAdd() {

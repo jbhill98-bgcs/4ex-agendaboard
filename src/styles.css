@@ -221,3 +221,5 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .sym-pop{top:calc(100% + 6px);left:0;background:#FFFFFF;border:1px solid #C9DAF0;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .wg[data-bp=above] .sym-pop,.wg[data-bp=above2] .sym-pop{top:auto;bottom:calc(100% + 6px)}
 .sym-pop button{background:#EEF4FB;color:#0B1F3A}
+
+.wg:not(.sel) .selonly{display:none!important}

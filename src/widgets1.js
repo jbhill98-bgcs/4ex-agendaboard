@@ -369,6 +369,47 @@ W.target = {
   }
 };
 
+/* ===== Agenda ===== */
+W.agenda = {
+  title: 'Agenda', icon: 'list', size: [10, 8], min: [4, 3],
+  defaults: () => ({ title: 'Agenda', items: [], style: 'num', size: 1, strike: true }),
+  clean(p) { p.title = safeStr(p.title, 60); p.items = (Array.isArray(p.items) ? p.items : []).slice(0, 40).map(i => ({ t: safeStr(i && i.t, 200), done: !!(i && i.done) })).filter(i => i.t); p.style = p.style === 'bullet' ? 'bullet' : 'num'; p.size = clamp(+p.size || 1, .6, 2.5); },
+  mount(b, p, api) {
+    const k = p.size || 1, sz = m => 'calc(var(--cell) * ' + (m * k) + ' * var(--ts))';
+    const list = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '.35em', fontSize: sz(.58) } });
+    const inp = h('input', { class: 'inp', placeholder: 'Add an agenda item…', style: { flex: 1 } });
+    const addIt = () => { const v = inp.value.trim(); if (!v) return; p.items.push({ t: v.slice(0, 200), done: false }); inp.value = ''; api.save(); draw(); inp.focus(); };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') addIt(); });
+    b.appendChild(h('div', { style: { position: 'absolute', inset: 0, overflow: 'auto', padding: 'calc(var(--cell)*.35) calc(var(--cell)*.5)' } },
+      h('div', { style: { fontSize: sz(.85), fontWeight: 700, lineHeight: 1.1, paddingBottom: '.2em', marginBottom: '.35em', borderBottom: '0.08em solid var(--accent)' } }, p.title || 'Agenda'),
+      list, editOnly(h('div', { class: 'row selonly', style: { marginTop: 'calc(var(--cell)*.3)' } }, inp, btn('Add', addIt, 'pri')))));
+    function draw() {
+      list.innerHTML = '';
+      if (!p.items.length) list.appendChild(h('div', { class: 'muted', style: { fontSize: '.8em' } }, 'Add the first item below.'));
+      p.items.forEach((it, i) => {
+        const marker = p.style === 'bullet' ? '•' : (i + 1) + '.';
+        const row = h('div', { style: { display: 'flex', gap: '.45em', alignItems: 'baseline', cursor: p.strike ? 'pointer' : 'default', opacity: it.done ? .5 : 1 } },
+          h('span', { style: { minWidth: p.style === 'bullet' ? '.6em' : '1.3em', fontWeight: 700, color: 'var(--accent2)', textAlign: 'right' } }, marker),
+          h('span', { style: { flex: 1, minWidth: 0, lineHeight: 1.3, textDecoration: it.done ? 'line-through' : 'none' } }, it.t),
+          editOnly(h('button', { 'aria-label': 'Delete item', class: 'selonly', style: { border: 0, background: 'transparent', color: 'var(--muted)', fontSize: '.85em', padding: '0 .2em' }, onClick: e => { e.stopPropagation(); p.items.splice(i, 1); api.save(); draw(); } }, '×')));
+        if (p.strike) row.addEventListener('click', e => { if (e.target.closest('button')) return; it.done = !it.done; api.save(); draw(); });
+        list.appendChild(row);
+      });
+    }
+    draw();
+  },
+  settings(f, p) {
+    f.text('Title', () => p.title, v => p.title = v.slice(0, 60), 'Agenda');
+    f.area('Items (one per line)', () => p.items.map(i => i.t).join('\n'), v => {
+      const old = p.items; p.items = v.split('\n').map(t => t.trim()).filter(Boolean).slice(0, 40).map((t, i) => ({ t: t.slice(0, 200), done: !!(old[i] && old[i].t === t && old[i].done) }));
+    }, 'Bell work\nNotes: solving systems\nPractice\nExit ticket', 8);
+    f.chips('List style', [['num', '1. 2. 3. Numbered'], ['bullet', '• Bulleted']], () => p.style, v => p.style = v);
+    f.chips('Text size', [['0.8', 'S'], ['1', 'M'], ['1.3', 'L'], ['1.7', 'XL'], ['2.2', 'XXL']], () => String(p.size), v => p.size = +v);
+    f.toggle('Tap an item to cross it off', () => p.strike, v => p.strike = v);
+    f.buttons([['Uncheck all', () => { p.items.forEach(i => i.done = false); f.fire(); }]]);
+  }
+};
+
 /* ===== Reminders ===== */
 W.reminders = {
   title: 'Reminders', icon: 'bell', size: [9, 6], min: [4, 3],
@@ -380,7 +421,7 @@ W.reminders = {
     const inp = h('input', { class: 'inp', placeholder: 'Add a reminder…', style: { flex: 1 } });
     const addIt = () => { const v = inp.value.trim(); if (!v) return; p.items.push({ id: uid(), text: v, time: '', popup: false, daily: false, done: false }); inp.value = ''; api.save(); draw(); };
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') addIt(); });
-    const addRow = editOnly(h('div', { class: 'row', style: { marginTop: 'calc(var(--cell)*.2)' } }, inp, btn('Add', addIt, 'pri')));
+    const addRow = editOnly(h('div', { class: 'row selonly', style: { marginTop: 'calc(var(--cell)*.2)' } }, inp, btn('Add', addIt, 'pri')));
     b.appendChild(h('div', { style: { position: 'absolute', inset: 0, overflow: 'auto', padding: 'calc(var(--cell)*.1) calc(var(--cell)*.4) calc(var(--cell)*.4)', fontSize: fsz } }, list, addRow));
     function draw() {
       list.innerHTML = '';
@@ -390,7 +431,7 @@ W.reminders = {
         list.appendChild(h('div', { style: { display: 'flex', gap: '.45em', alignItems: 'flex-start' } }, chk,
           h('div', { style: { flex: 1, minWidth: 0, textDecoration: it.done ? 'line-through' : 'none', opacity: it.done ? .55 : 1, lineHeight: 1.3 } }, it.text,
             it.time ? h('span', { style: { marginLeft: '.5em', fontSize: '.7em', color: '#F5C842', whiteSpace: 'nowrap' } }, (it.popup ? 'Pop-up ' : '') + fmt12(it.time) + (it.daily ? ' daily' : '')) : null),
-          editOnly(h('button', { 'aria-label': 'Delete reminder', style: { border: 0, background: 'transparent', color: 'var(--muted)', fontSize: '.9em', padding: '0 .2em' }, onClick: e => { e.stopPropagation(); p.items = p.items.filter(x => x !== it); api.save(); draw(); } }, '×'))));
+          editOnly(h('button', { 'aria-label': 'Delete reminder', class: 'selonly', style: { border: 0, background: 'transparent', color: 'var(--muted)', fontSize: '.9em', padding: '0 .2em' }, onClick: e => { e.stopPropagation(); p.items = p.items.filter(x => x !== it); api.save(); draw(); } }, '×'))));
       });
     }
     draw();
