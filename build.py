@@ -3,7 +3,15 @@ import os
 R=os.path.dirname(os.path.abspath(__file__))+'/'
 css=open(R+'src/styles.css').read()
 qr=open(R+'vendor/qrcode.js').read()
-js='\n'.join(open(R+'src/'+f).read() for f in ['icons.js','core.js','widgets1.js','widgets2.js','templates.js'])
+import glob, json
+lib=[]
+for f in sorted(glob.glob(R+'library/*.json')):
+    try:
+        o=json.load(open(f))
+        if o.get('format')=='4example-board': lib.append(o)
+    except Exception as e: print('skip',f,e)
+libjs='const LIBRARY = '+json.dumps(lib)+';\n'
+js=libjs+'\n'.join(open(R+'src/'+f).read() for f in ['icons.js','core.js','widgets1.js','widgets2.js','widgets3.js','templates.js'])
 icon=open(R+'touch.b64').read()
 mark=open(R+'mark.b64').read()
 html=f'''<!DOCTYPE html>

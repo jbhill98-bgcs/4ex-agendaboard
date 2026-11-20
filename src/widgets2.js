@@ -355,7 +355,7 @@ W.questions = {
     if (p.order.length !== items.length || p.order.some(i => i >= items.length)) { reorder(); }
     function reorder() { p.order = items.map((_, i) => i); if (p.shuffle) for (let i = p.order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [p.order[i], p.order[j]] = [p.order[j], p.order[i]]; } p.pos = -1; }
     const head = h('div', { class: 'muted', style: { fontSize: cellFs(.38), letterSpacing: '.05em', textTransform: 'uppercase' } });
-    const q = h('div', { style: { fontSize: 'calc(var(--cell) * .9 * var(--ts) * ' + (p.size || 1) + ')', fontWeight: 500, lineHeight: 1.3, textAlign: 'center', padding: '0 4cqw', overflow: 'auto', maxHeight: '100%' } });
+    const q = h('div', { class: 'qtext', style: { fontSize: 'calc(var(--cell) * .9 * var(--ts) * ' + (p.size || 1) + ')', fontWeight: 500, lineHeight: 1.3, textAlign: 'center', padding: '0 4cqw', overflow: 'auto', maxHeight: '100%' } });
     const back = btn('‹ Back', () => { if (p.pos > 0) { p.pos--; api.save(); draw(); } }, 'sm');
     const next = btn('Next ›', () => { if (p.pos < items.length - 1) { p.pos++; api.save(); draw(); Sound.play('pop'); } else toast('That was the last one. Tap Restart to go again.'); }, 'pri');
     b.appendChild(h('div', { class: 'fill', style: { justifyContent: 'space-between', padding: '1.5cqh 0 3cqh', gap: '2cqh' } }, head, h('div', { style: { flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' } }, q),

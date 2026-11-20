@@ -239,6 +239,17 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
 .wg:not(.sel) .selonly{display:none!important}
 
+#toast.act{pointer-events:auto;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 18px}
+#toast .tact{border:0;border-radius:8px;background:#0B1F3A;color:#fff;font-weight:600;font-size:15px;padding:8px 14px}
+.wg.lifting{transition:transform .45s ease-in;transform:scale(1.015)}
+.wg.dragging{transform:scale(1.02)}
+select.inp{appearance:auto}
+.spk{position:absolute;right:8px;bottom:8px;z-index:4;width:40px;height:40px;border-radius:50%;border:0;background:rgba(93,169,255,.22);color:var(--accent2);display:flex;align-items:center;justify-content:center;padding:0}
+.wg.lightcard .spk,.wg-sticky .spk{background:rgba(11,31,58,.12);color:#1D4F86}
+.spk.on{background:var(--accent);color:#0B1F3A}
+.ce{outline:none;-webkit-user-select:text;user-select:text;white-space:pre-wrap;word-wrap:break-word;min-height:1.2em}
+.ce:focus{background:rgba(93,169,255,.08);border-radius:4px}
+
 </style>
 </head>
 <body>
@@ -2544,15 +2555,16 @@ var qrcode = function() {
 
 </script>
 <script>
+const LIBRARY = [];
 /* Icons: Lucide (lucide.dev), ISC License, Copyright (c) Lucide Contributors */
-const LUCIDE = {"plus": "<svg class=\"lucide lucide-plus\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "clock": "<svg class=\"lucide lucide-clock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "timer": "<svg class=\"lucide lucide-hourglass\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 22h14\" /> <path d=\"M5 2h14\" /> <path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\" /> <path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\" />", "stopwatch": "<svg class=\"lucide lucide-timer\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "cal": "<svg class=\"lucide lucide-calendar\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "flag": "<svg class=\"lucide lucide-flag\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "bell": "<svg class=\"lucide lucide-bell-ring\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\" /> <path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\" /> <path d=\"M4 2C2.8 3.7 2 5.7 2 8\" /> <path d=\"M22 8c0-2.3-.8-4.3-2-6\" />", "text": "<svg class=\"lucide lucide-type\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <polyline points=\"4 7 4 4 20 4 20 7\" /> <line x1=\"9\" x2=\"15\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"12\" y1=\"4\" y2=\"20\" />", "note": "<svg class=\"lucide lucide-sticky-note\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z\" /> <path d=\"M15 3v4a2 2 0 0 0 2 2h4\" />", "list": "<svg class=\"lucide lucide-list-checks\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m3 17 2 2 4-4\" /> <path d=\"m3 7 2 2 4-4\" /> <path d=\"M13 6h8\" /> <path d=\"M13 12h8\" /> <path d=\"M13 18h8\" />", "target": "<svg class=\"lucide lucide-target\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "vol": "<svg class=\"lucide lucide-audio-lines\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 10v3\" /> <path d=\"M6 6v11\" /> <path d=\"M10 3v18\" /> <path d=\"M14 8v7\" /> <path d=\"M18 5v13\" /> <path d=\"M22 10v3\" />", "sign": "<svg class=\"lucide lucide-signpost\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 13v8\" /> <path d=\"M12 3v3\" /> <path d=\"M18 6a2 2 0 0 1 1.387.56l2.307 2.22a1 1 0 0 1 0 1.44l-2.307 2.22A2 2 0 0 1 18 13H6a2 2 0 0 1-1.387-.56l-2.306-2.22a1 1 0 0 1 0-1.44l2.306-2.22A2 2 0 0 1 6 6z\" />", "image": "<svg class=\"lucide lucide-image\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" />", "qr": "<svg class=\"lucide lucide-qr-code\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\" /> <rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\" /> <rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" /> <path d=\"M21 16h-3a2 2 0 0 0-2 2v3\" /> <path d=\"M21 21v.01\" /> <path d=\"M12 7v3a2 2 0 0 1-2 2H7\" /> <path d=\"M3 12h.01\" /> <path d=\"M12 3h.01\" /> <path d=\"M12 16v.01\" /> <path d=\"M16 12h1\" /> <path d=\"M21 12v.01\" /> <path d=\"M12 21v-1\" />", "spinner": "<svg class=\"lucide lucide-loader-pinwheel\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M22 12a1 1 0 0 1-10 0 1 1 0 0 0-10 0\" /> <path d=\"M7 20.7a1 1 0 1 1 5-8.7 1 1 0 1 0 5-8.6\" /> <path d=\"M7 3.3a1 1 0 1 1 5 8.6 1 1 0 1 0 5 8.6\" /> <circle cx=\"12\" cy=\"12\" r=\"10\" />", "dice": "<svg class=\"lucide lucide-dices\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\" /> <path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\" /> <path d=\"M6 18h.01\" /> <path d=\"M10 14h.01\" /> <path d=\"M15 6h.01\" /> <path d=\"M18 9h.01\" />", "coin": "<svg class=\"lucide lucide-coins\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"8\" r=\"6\" /> <path d=\"M18.09 10.37A6 6 0 1 1 10.34 18\" /> <path d=\"M7 6h1v4\" /> <path d=\"m16.71 13.88.7.71-2.82 2.82\" />", "hash": "<svg class=\"lucide lucide-hash\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <line x1=\"4\" x2=\"20\" y1=\"9\" y2=\"9\" /> <line x1=\"4\" x2=\"20\" y1=\"15\" y2=\"15\" /> <line x1=\"10\" x2=\"8\" y1=\"3\" y2=\"21\" /> <line x1=\"16\" x2=\"14\" y1=\"3\" y2=\"21\" />", "user": "<svg class=\"lucide lucide-user\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "users": "<svg class=\"lucide lucide-users\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />", "trophy": "<svg class=\"lucide lucide-trophy\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "q": "<svg class=\"lucide lucide-circle-help\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" /> <path d=\"M12 17h.01\" />", "plane": "<svg class=\"lucide lucide-grid-3x3\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "graph": "<svg class=\"lucide lucide-chart-spline\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7\" />", "play": "<svg class=\"lucide lucide-circle-play\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <polygon points=\"10 8 16 12 10 16 10 8\" />", "pen": "<svg class=\"lucide lucide-pencil\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "bg": "<svg class=\"lucide lucide-palette\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\" />", "boards": "<svg class=\"lucide lucide-save\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\" /> <path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\" /> <path d=\"M7 3v4a1 1 0 0 0 1 1h7\" />", "undo": "<svg class=\"lucide lucide-undo-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "lock": "<svg class=\"lucide lucide-lock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "unlock": "<svg class=\"lucide lucide-lock-open\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 9.9-1\" />", "tv": "<svg class=\"lucide lucide-presentation\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "help": "<svg class=\"lucide lucide-circle-help\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" /> <path d=\"M12 17h.01\" />", "gear": "<svg class=\"lucide lucide-settings\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "copy": "<svg class=\"lucide lucide-copy\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "front": "<svg class=\"lucide lucide-bring-to-front\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"8\" y=\"8\" width=\"8\" height=\"8\" rx=\"2\" /> <path d=\"M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2\" /> <path d=\"M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2\" />", "x": "<svg class=\"lucide lucide-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "erase": "<svg class=\"lucide lucide-eraser\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "trash": "<svg class=\"lucide lucide-trash-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "ext": "<svg class=\"lucide lucide-external-link\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "check": "<svg class=\"lucide lucide-check\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M20 6 9 17l-5-5\" />", "history": "<svg class=\"lucide lucide-history\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "sparkles": "<svg class=\"lucide lucide-sparkles\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "period": "<svg class=\"lucide lucide-calendar-clock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5\" /> <path d=\"M16 2v4\" /> <path d=\"M8 2v4\" /> <path d=\"M3 10h5\" /> <path d=\"M17.5 17.5 16 16.3V14\" /> <circle cx=\"16\" cy=\"16\" r=\"6\" />"};
+const LUCIDE = {"plus": "<svg class=\"lucide lucide-plus\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "clock": "<svg class=\"lucide lucide-clock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "timer": "<svg class=\"lucide lucide-hourglass\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M5 22h14\" /> <path d=\"M5 2h14\" /> <path d=\"M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22\" /> <path d=\"M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2\" />", "stopwatch": "<svg class=\"lucide lucide-timer\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\" /> <line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\" /> <circle cx=\"12\" cy=\"14\" r=\"8\" />", "cal": "<svg class=\"lucide lucide-calendar\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />", "flag": "<svg class=\"lucide lucide-flag\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\" /> <line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\" />", "bell": "<svg class=\"lucide lucide-bell-ring\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\" /> <path d=\"M10.3 21a1.94 1.94 0 0 0 3.4 0\" /> <path d=\"M4 2C2.8 3.7 2 5.7 2 8\" /> <path d=\"M22 8c0-2.3-.8-4.3-2-6\" />", "text": "<svg class=\"lucide lucide-type\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <polyline points=\"4 7 4 4 20 4 20 7\" /> <line x1=\"9\" x2=\"15\" y1=\"20\" y2=\"20\" /> <line x1=\"12\" x2=\"12\" y1=\"4\" y2=\"20\" />", "note": "<svg class=\"lucide lucide-sticky-note\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z\" /> <path d=\"M15 3v4a2 2 0 0 0 2 2h4\" />", "list": "<svg class=\"lucide lucide-list-checks\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m3 17 2 2 4-4\" /> <path d=\"m3 7 2 2 4-4\" /> <path d=\"M13 6h8\" /> <path d=\"M13 12h8\" /> <path d=\"M13 18h8\" />", "target": "<svg class=\"lucide lucide-target\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"6\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />", "vol": "<svg class=\"lucide lucide-audio-lines\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 10v3\" /> <path d=\"M6 6v11\" /> <path d=\"M10 3v18\" /> <path d=\"M14 8v7\" /> <path d=\"M18 5v13\" /> <path d=\"M22 10v3\" />", "sign": "<svg class=\"lucide lucide-signpost\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 13v8\" /> <path d=\"M12 3v3\" /> <path d=\"M18 6a2 2 0 0 1 1.387.56l2.307 2.22a1 1 0 0 1 0 1.44l-2.307 2.22A2 2 0 0 1 18 13H6a2 2 0 0 1-1.387-.56l-2.306-2.22a1 1 0 0 1 0-1.44l2.306-2.22A2 2 0 0 1 6 6z\" />", "image": "<svg class=\"lucide lucide-image\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" />", "qr": "<svg class=\"lucide lucide-qr-code\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\" /> <rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\" /> <rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" /> <path d=\"M21 16h-3a2 2 0 0 0-2 2v3\" /> <path d=\"M21 21v.01\" /> <path d=\"M12 7v3a2 2 0 0 1-2 2H7\" /> <path d=\"M3 12h.01\" /> <path d=\"M12 3h.01\" /> <path d=\"M12 16v.01\" /> <path d=\"M16 12h1\" /> <path d=\"M21 12v.01\" /> <path d=\"M12 21v-1\" />", "spinner": "<svg class=\"lucide lucide-loader-pinwheel\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M22 12a1 1 0 0 1-10 0 1 1 0 0 0-10 0\" /> <path d=\"M7 20.7a1 1 0 1 1 5-8.7 1 1 0 1 0 5-8.6\" /> <path d=\"M7 3.3a1 1 0 1 1 5 8.6 1 1 0 1 0 5 8.6\" /> <circle cx=\"12\" cy=\"12\" r=\"10\" />", "dice": "<svg class=\"lucide lucide-dices\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"12\" height=\"12\" x=\"2\" y=\"10\" rx=\"2\" ry=\"2\" /> <path d=\"m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6\" /> <path d=\"M6 18h.01\" /> <path d=\"M10 14h.01\" /> <path d=\"M15 6h.01\" /> <path d=\"M18 9h.01\" />", "coin": "<svg class=\"lucide lucide-coins\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"8\" cy=\"8\" r=\"6\" /> <path d=\"M18.09 10.37A6 6 0 1 1 10.34 18\" /> <path d=\"M7 6h1v4\" /> <path d=\"m16.71 13.88.7.71-2.82 2.82\" />", "hash": "<svg class=\"lucide lucide-hash\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <line x1=\"4\" x2=\"20\" y1=\"9\" y2=\"9\" /> <line x1=\"4\" x2=\"20\" y1=\"15\" y2=\"15\" /> <line x1=\"10\" x2=\"8\" y1=\"3\" y2=\"21\" /> <line x1=\"16\" x2=\"14\" y1=\"3\" y2=\"21\" />", "user": "<svg class=\"lucide lucide-user\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />", "users": "<svg class=\"lucide lucide-users\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />", "trophy": "<svg class=\"lucide lucide-trophy\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6\" /> <path d=\"M18 9h1.5a2.5 2.5 0 0 0 0-5H18\" /> <path d=\"M4 22h16\" /> <path d=\"M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22\" /> <path d=\"M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\" /> <path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\" />", "q": "<svg class=\"lucide lucide-circle-help\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" /> <path d=\"M12 17h.01\" />", "plane": "<svg class=\"lucide lucide-grid-3x3\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M3 9h18\" /> <path d=\"M3 15h18\" /> <path d=\"M9 3v18\" /> <path d=\"M15 3v18\" />", "graph": "<svg class=\"lucide lucide-chart-spline\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7\" />", "play": "<svg class=\"lucide lucide-circle-play\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <polygon points=\"10 8 16 12 10 16 10 8\" />", "pen": "<svg class=\"lucide lucide-pencil\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />", "bg": "<svg class=\"lucide lucide-palette\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\" />", "boards": "<svg class=\"lucide lucide-save\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\" /> <path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\" /> <path d=\"M7 3v4a1 1 0 0 0 1 1h7\" />", "undo": "<svg class=\"lucide lucide-undo-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />", "lock": "<svg class=\"lucide lucide-lock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />", "unlock": "<svg class=\"lucide lucide-lock-open\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 9.9-1\" />", "tv": "<svg class=\"lucide lucide-presentation\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M2 3h20\" /> <path d=\"M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3\" /> <path d=\"m7 21 5-5 5 5\" />", "help": "<svg class=\"lucide lucide-circle-help\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" /> <path d=\"M12 17h.01\" />", "gear": "<svg class=\"lucide lucide-settings\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />", "copy": "<svg class=\"lucide lucide-copy\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "front": "<svg class=\"lucide lucide-bring-to-front\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect x=\"8\" y=\"8\" width=\"8\" height=\"8\" rx=\"2\" /> <path d=\"M4 10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2\" /> <path d=\"M14 20a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2\" />", "x": "<svg class=\"lucide lucide-x\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />", "erase": "<svg class=\"lucide lucide-eraser\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21\" /> <path d=\"M22 21H7\" /> <path d=\"m5 11 9 9\" />", "trash": "<svg class=\"lucide lucide-trash-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />", "ext": "<svg class=\"lucide lucide-external-link\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M15 3h6v6\" /> <path d=\"M10 14 21 3\" /> <path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />", "check": "<svg class=\"lucide lucide-check\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M20 6 9 17l-5-5\" />", "history": "<svg class=\"lucide lucide-history\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "sparkles": "<svg class=\"lucide lucide-sparkles\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\" /> <path d=\"M20 3v4\" /> <path d=\"M22 5h-4\" /> <path d=\"M4 17v2\" /> <path d=\"M5 18H3\" />", "period": "<svg class=\"lucide lucide-calendar-clock\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5\" /> <path d=\"M16 2v4\" /> <path d=\"M8 2v4\" /> <path d=\"M3 10h5\" /> <path d=\"M17.5 17.5 16 16.3V14\" /> <circle cx=\"16\" cy=\"16\" r=\"6\" />", "organizer": "<svg class=\"lucide lucide-columns-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" /> <path d=\"M12 3v18\" />", "vocab": "<svg class=\"lucide lucide-book-a\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\" /> <path d=\"m8 13 4-7 4 7\" /> <path d=\"M9.1 11h5.7\" />", "lab": "<svg class=\"lucide lucide-chart-scatter\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"18.5\" cy=\"5.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"11.5\" cy=\"11.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"7.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"14.5\" r=\".5\" fill=\"currentColor\" /> <path d=\"M3 3v16a2 2 0 0 0 2 2h16\" />", "timeline": "<svg class=\"lucide lucide-milestone\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M12 13v8\" /> <path d=\"M12 3v3\" /> <path d=\"M4 6a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h13a2 2 0 0 0 1.152-.365l3.424-2.317a1 1 0 0 0 0-1.635l-3.424-2.318A2 2 0 0 0 17 6z\" />", "speak": "<svg class=\"lucide lucide-volume-2\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\" /> <path d=\"M16 9a5 5 0 0 1 0 6\" /> <path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\" />", "stop": "<svg class=\"lucide lucide-circle-stop\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <circle cx=\"12\" cy=\"12\" r=\"10\" /> <rect x=\"9\" y=\"9\" width=\"6\" height=\"6\" rx=\"1\" />", "tidy": "<svg class=\"lucide lucide-wand-sparkles\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72\" /> <path d=\"m14 7 3 3\" /> <path d=\"M5 6v4\" /> <path d=\"M19 14v4\" /> <path d=\"M10 2v2\" /> <path d=\"M7 8H3\" /> <path d=\"M21 16h-4\" /> <path d=\"M11 3H9\" />", "sched": "<svg class=\"lucide lucide-calendar-cog\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m15.2 16.9-.9-.4\" /> <path d=\"m15.2 19.1-.9.4\" /> <path d=\"M16 2v4\" /> <path d=\"m16.9 15.2-.4-.9\" /> <path d=\"m16.9 20.8-.4.9\" /> <path d=\"m19.5 14.3-.4.9\" /> <path d=\"m19.5 21.7-.4-.9\" /> <path d=\"M21 10.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6\" /> <path d=\"m21.7 16.5-.9.4\" /> <path d=\"m21.7 19.5-.9-.4\" /> <path d=\"M3 10h18\" /> <path d=\"M8 2v4\" /> <circle cx=\"18\" cy=\"18\" r=\"3\" />", "library": "<svg class=\"lucide lucide-library\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" > <path d=\"m16 6 4 14\" /> <path d=\"M12 6v14\" /> <path d=\"M8 8v12\" /> <path d=\"M4 4v16\" />"};
 
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
-const VERSION = '1.4';
+const VERSION = '1.5';
 const FEEDBACK_URL = '';
-const CHANGES = ['New Agenda widget: a titled numbered or bulleted list you can check off.', 'Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
+const CHANGES = ['New widgets: graphic organizer (T-chart, Venn, KWL, Frayer), vocabulary card, lab data table with graph, and timeline.', 'Read aloud: a speaker button can read text boxes, notes, vocabulary and questions out loud.', 'Press and hold any card to move it. Tidy up lines everything up in one tap.', 'Saved boards can load by themselves on a schedule, and the department library shows shared boards.', 'Messages now have an Undo button.', 'New Agenda widget: a titled numbered or bulleted list you can check off.', 'Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -2914,6 +2926,7 @@ function mountW(w) {
   head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; startDrag(e, w.id, 'move'); });
   rs.addEventListener('pointerdown', e => startDrag(e, w.id, 'size'));
   el.addEventListener('pointerdown', () => { if (!document.body.classList.contains('present')) select(w.id); }, true);
+  el.addEventListener('pointerdown', e => longPress(e, w.id, el));
   placeW(w);
   if (selected === w.id) el.classList.add('sel');
 }
@@ -2930,7 +2943,7 @@ function renderAll() {
   layout(); Ink.redraw(); refreshEmpty();
 }
 function refreshEmpty() { emptyEl.style.display = board.widgets.length ? 'none' : 'flex'; }
-function drawTemplates() { const t = emptyEl.querySelector('.tpls'); t.innerHTML = ''; TEMPLATES.forEach(tp => t.appendChild(h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); toast('Loaded the ' + tp.name + ' template'); } }, tp.name))); }
+function drawTemplates() { const t = emptyEl.querySelector('.tpls'); t.innerHTML = ''; TEMPLATES.forEach(tp => t.appendChild(h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); toastUndo('Loaded the ' + tp.name + ' board'); } }, tp.name))); }
 function topZ() { return board.widgets.reduce((m, w) => Math.max(m, w.z || 0), 0); }
 function findSpot(wd, ht) {
   const occ = (x, y) => board.widgets.some(o => x < o.x + o.w && x + wd > o.x && y < o.y + o.h && y + ht > o.y);
@@ -2960,7 +2973,7 @@ function removeW(id) {
   const before = snap();
   destroyW(id); board.widgets = board.widgets.filter(w => w.id !== id);
   if (selected === id) selected = null;
-  refreshEmpty(); pushUndo(before); saveCurrent(); toast('Widget removed · tap Undo to bring it back');
+  refreshEmpty(); pushUndo(before); saveCurrent(); toastUndo('Widget removed');
 }
 function select(id) {
   if (selected === id) return;
@@ -2976,7 +2989,26 @@ boardEl.addEventListener('pointerdown', e => {
 });
 
 /* drag & resize */
-function startDrag(e, id, mode) {
+let lpDrag = false, lpSuppress = 0;
+const LP_SKIP = 'button,input,textarea,select,a,iframe,[contenteditable="true"],[contenteditable="plaintext-only"],.wg-head,.wg-rs,.txt-bar,.noLP';
+function longPress(e, id, el) {
+  if (locked || document.body.classList.contains('present') || document.body.classList.contains('drawing')) return;
+  if (e.button > 0 || (e.target.closest && e.target.closest(LP_SKIP))) return;
+  const sx = e.clientX, sy = e.clientY, pid = e.pointerId; let timer = null;
+  const cancel = () => { clearTimeout(timer); el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', cancel); el.removeEventListener('pointercancel', cancel); el.classList.remove('lifting'); };
+  const mv = ev => { if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 10) cancel(); };
+  el.addEventListener('pointermove', mv); el.addEventListener('pointerup', cancel); el.addEventListener('pointercancel', cancel);
+  el.classList.add('lifting');
+  timer = setTimeout(() => {
+    cancel(); lpDrag = true; lpSuppress = Date.now() + 100000;
+    try { navigator.vibrate && navigator.vibrate(15); } catch (er) { }
+    startDrag({ preventDefault() { }, stopPropagation() { }, currentTarget: el, pointerId: pid, clientX: sx, clientY: sy }, id, 'move', () => { lpDrag = false; lpSuppress = Date.now() + 350; });
+  }, 450);
+}
+document.addEventListener('touchmove', e => { if (lpDrag) e.preventDefault(); }, { passive: false });
+document.addEventListener('click', e => { if (Date.now() < lpSuppress) { e.stopPropagation(); e.preventDefault(); lpSuppress = 0; } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.wg') && !e.target.closest('input,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]')) e.preventDefault(); });
+function startDrag(e, id, mode, onEnd) {
   if (locked || document.body.classList.contains('present')) return;
   const w = findW(id), it = inst.get(id); if (!w || !it) return;
   e.preventDefault(); e.stopPropagation(); select(id);
@@ -2995,6 +3027,7 @@ function startDrag(e, id, mode) {
   const up = () => {
     t.removeEventListener('pointermove', mv); t.removeEventListener('pointerup', up); t.removeEventListener('pointercancel', up);
     el.classList.remove('dragging');
+    if (onEnd) onEnd();
     if (moved) {
       const sn = board.bg.snap !== false, r = v => sn ? Math.round(v / cell) : Math.round(v / cell * 4) / 4;
       if (mode === 'move') { w.x = r(el.offsetLeft); w.y = r(el.offsetTop); }
@@ -3059,7 +3092,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 /* ---------- toast / popup ---------- */
 const toastEl = h('div', { id: 'toast', role: 'status' });
 let toastT = null;
-function toast(msg, ms) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), ms || 2400); }
+function toastUndo(msg) { toast(msg, 6000, ['Undo', () => undo()]); }
+function toast(msg, ms, action) { toastEl.innerHTML = ''; toastEl.appendChild(document.createTextNode(msg)); toastEl.classList.toggle('act', !!action); if (action) toastEl.appendChild(h('button', { class: 'tact', onClick: e => { e.stopPropagation(); toastEl.classList.remove('show'); action[1](); } }, action[0])); toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), ms || 2400); }
 const popupEl = h('div', { id: 'popup', role: 'alert' });
 const popQueue = []; let popShowing = false;
 function showPopup(title, msg, onSnooze) {
@@ -3158,6 +3192,7 @@ function openSettings(id) {
 const CATS = [
   ['Time', ['clock', 'timer', 'stopwatch', 'date', 'calendar', 'countdown', 'period']],
   ['Classroom', ['text', 'sticky', 'agenda', 'target', 'reminders', 'stoplight', 'volume', 'sign', 'image', 'qr']],
+  ['Organizers & content', ['organizer', 'vocab', 'timeline', 'labdata']],
   ['Math & games', ['spinner', 'dice', 'coin', 'random', 'names', 'groups', 'score', 'questions', 'plane', 'desmos', 'youtube']]
 ];
 function openAdd() {
@@ -3213,7 +3248,7 @@ function openBoardPanel() {
     f.sec('Classroom');
     f.toggle('Keep the screen awake', () => prefs.wake, v => { prefs.wake = v; savePrefs(); if (v) Wake.req(); else Wake.off(); });
     f.note(Wake.status());
-    f.buttons([['Test sound', () => Sound.play('chime')], ['Clear drawing', () => { if (!board.ink.length) return; pushUndo(snap()); board.ink = []; Ink.redraw(); saveCurrent(); toast('Drawing cleared'); }]]);
+    f.buttons([['Test sound', () => Sound.play('chime')], ['Clear drawing', () => { if (!board.ink.length) return; pushUndo(snap()); board.ink = []; Ink.redraw(); saveCurrent(); toastUndo('Drawing cleared'); }]]);
   }, { onClose: () => { if (snap() !== before) pushUndo(before); } });
 }
 
@@ -3248,7 +3283,7 @@ function openBoards() {
     f.buttons([
       isSaved ? ['Save changes', () => { updateSaved(); toast('Saved “' + board.name + '”'); openSheet.rebuild(); }, 'pri'] : null,
       ['Save as new board', () => { const b = saveBoardAs(board.name && board.name !== 'My board' ? board.name : 'Board ' + (Object.keys(all).length + 1)); toast('Saved “' + b.name + '”'); openSheet.rebuild(); }, isSaved ? '' : 'pri'],
-      ['New blank board', () => { loadBoard(newBoard()); closeSheet(); toast('Blank board · tap Undo to go back'); }]
+      ['New blank board', () => { loadBoard(newBoard()); closeSheet(); toastUndo('Blank board'); }]
     ]);
     f.sec('Your boards');
     const list = Object.values(all).sort((a, b) => (b.updated || 0) - (a.updated || 0));
@@ -3260,13 +3295,17 @@ function openBoards() {
         confirmBtn('Delete', () => { deleteSaved(b.id); openSheet.rebuild(); })));
     });
     f.note(Cloud.ready ? 'Your boards sync to your Claude account, so they show up on your iPad and laptop.' : 'Boards are saved on this device. Use Export and Import to move a board to another device or share it with a colleague.');
+    scheduleSection(f, body);
+    f.sec('From the department');
+    if (!LIBRARY.length) f.note('Boards your coworkers share will show up here. Want yours added? Export it below and send the file to Joshua.');
+    LIBRARY.forEach(it => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (it.board && it.board.name) || 'Board'), h('div', { class: 'sub' }, (it.by ? 'Shared by ' + it.by + ' · ' : '') + ((it.board && it.board.widgets) || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { closeSheet(); loadLibrary(it); } }, 'Load'))));
     f.sec('Starter boards');
     f.note('Ready-made layouts to start from. Loading one replaces what’s on the board (Undo brings it back).');
-    TEMPLATES.forEach(tp => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, tp.name), h('div', { class: 'sub' }, tp.desc)), h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); closeSheet(); toast('Loaded the ' + tp.name + ' template'); } }, 'Load'))));
+    TEMPLATES.forEach(tp => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, tp.name), h('div', { class: 'sub' }, tp.desc)), h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); closeSheet(); toastUndo('Loaded the ' + tp.name + ' board'); } }, 'Load'))));
     f.sec('Earlier versions of this board');
     const bk = backups();
     if (!bk.length) f.note('The board keeps its last 5 versions automatically (when you open it, every 15 minutes while you work, and before you load another board).');
-    bk.forEach(x => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (x.board.name || 'Board') + ' · ' + new Date(x.t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })), h('div', { class: 'sub' }, (x.board.widgets || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { const b = normalizeBoard(clone(x.board)); if (b) { loadBoard(b); closeSheet(); toast('Restored · tap Undo to go back'); } } }, 'Restore'))));
+    bk.forEach(x => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (x.board.name || 'Board') + ' · ' + new Date(x.t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })), h('div', { class: 'sub' }, (x.board.widgets || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { const b = normalizeBoard(clone(x.board)); if (b) { loadBoard(b); closeSheet(); toastUndo('Restored'); } } }, 'Restore'))));
     f.sec('Share or move a board');
     f.buttons([['Export this board', exportBoard], ['Import a board file', importBoard]]);
     f.note('An exported board file includes its images. Class lists for the name picker are never included; they stay on this device.');
@@ -3383,6 +3422,7 @@ dock.append(
   dbtn('boards', 'boards', 'Boards', () => openBoards()),
   h('span', { class: 'sep' }),
   dbtn('undo', 'undo', 'Undo', () => undo()),
+  dbtn('tidy', 'tidy', 'Tidy up', () => tidyUp()),
   dbtn('lock', 'lock', 'Lock', () => setLocked(!locked)),
   dbtn('present', 'tv', 'Present', () => setPresent(true)),
   dbtn('help', 'help', 'Help', () => openHelp()));
@@ -3474,7 +3514,7 @@ let lastMin = -1;
 setInterval(() => {
   const now = new Date();
   tickers.forEach(t => { try { t.fn(now); } catch (e) { console.error(e); } });
-  if (now.getMinutes() !== lastMin || snoozes.length) { lastMin = now.getMinutes(); checkReminders(now); }
+  if (now.getMinutes() !== lastMin || snoozes.length) { lastMin = now.getMinutes(); checkReminders(now); checkSchedule(now); }
 }, 250);
 let firstTap = true;
 document.addEventListener('pointerdown', () => { Sound.unlock(); if (firstTap) { firstTap = false; Wake.req(); toastEl.classList.remove('show'); } }, true);
@@ -3512,6 +3552,82 @@ async function onCloudReady() {
   if (changed) LS.set('boards', all);
   const sp = docs.find(d => d.id === 'spinPresets');
   if (sp && sp.data && Array.isArray(sp.data.list)) { const local = LS.get('spinPresets', []); if ((sp.data.updated || 0) > (LS.get('spinPresetsUpdated', 0))) { LS.set('spinPresets', sp.data.list); LS.set('spinPresetsUpdated', sp.data.updated); } else if (local.length) Cloud.put('spinPresets', { list: local, updated: Date.now() }, 0); }
+}
+
+/* ---------- tidy up ---------- */
+function tidyUp() {
+  if (locked) { toast('Unlock the board first'); return; }
+  if (!board.widgets.length) return;
+  const before = snap();
+  const ws = board.widgets.slice();
+  ws.forEach(w => { w.x = Math.round(w.x); w.y = Math.round(w.y); w.w = Math.max(1, Math.round(w.w)); w.h = Math.max(1, Math.round(w.h)); });
+  const align = (key) => { // pull edges that are within 1 square of each other onto the same line
+    const sorted = ws.slice().sort((a, b) => a[key] - b[key]); let group = [];
+    const flush = () => { if (group.length > 1) { const v = Math.min(...group.map(g => g[key])); group.forEach(g => g[key] = v); } group = []; };
+    sorted.forEach(w => { if (group.length && w[key] - group[0][key] > 1) flush(); group.push(w); }); flush();
+  };
+  align('x'); align('y');
+  // make widgets that share a row and nearly match in height the same height
+  const rows = {}; ws.forEach(w => (rows[w.y] = rows[w.y] || []).push(w));
+  Object.values(rows).forEach(r => { if (r.length < 2) return; const hs = r.map(w => w.h); const m = Math.max(...hs); r.forEach(w => { if (m - w.h <= 1) w.h = m; }); });
+  // close small gaps (1 square) and open up a 1-square gutter between neighbors
+  // resolve overlaps: place top-to-bottom, left-to-right
+  const placed = [];
+  ws.sort((a, b) => a.y - b.y || a.x - b.x).forEach(w => {
+    w.x = clamp(w.x, 0, COLS - Math.min(w.w, COLS));
+    let guard = 0;
+    while (guard++ < 200) {
+      const hit = placed.find(o => w.x < o.x + o.w && w.x + w.w > o.x && w.y < o.y + o.h && w.y + w.h > o.y);
+      if (!hit) break;
+      w.y = hit.y + hit.h;
+    }
+    placed.push(w);
+  });
+  if (snap() === before) { toast('Already tidy'); return; }
+  pushUndo(before); renderAll(); saveCurrent(); toastUndo('Tidied up');
+}
+
+/* ---------- scheduled boards ---------- */
+function getSched() { return LS.get('schedule', []) || []; }
+function setSched(l) { LS.set('schedule', l); }
+function checkSchedule(now) {
+  const hm = pad2(now.getHours()) + ':' + pad2(now.getMinutes()), day = todayKey(now), wk = now.getDay() % 6 !== 0;
+  const list = getSched(); let changed = false;
+  list.forEach(s => {
+    if (!s.on || s.time !== hm || s.fired === day || (s.days === 'weekdays' && !wk)) return;
+    s.fired = day; changed = true;
+    const b = savedBoards()[s.board]; if (!b) return;
+    if (savedBoards()[board.id] && board.id !== b.id) updateSaved();
+    if (board.id === b.id) return;
+    closeSheet(); loadBoard(b); toastUndo('Scheduled: loaded ' + (b.name || 'board'));
+  });
+  if (changed) setSched(list);
+}
+function scheduleSection(f, body) {
+  const all = savedBoards(), ids = Object.keys(all);
+  f.sec('Load boards on a schedule');
+  if (!ids.length) { f.note('Save a board first, then you can have it load by itself at a set time (for example, Bell Work at 9:35).'); return; }
+  f.note('At each time, the board loads by itself. Changes to the saved board on screen are kept first.');
+  const list = getSched();
+  list.forEach((s, i) => {
+    const tm = h('input', { class: 'inp', type: 'time', value: s.time || '', style: { width: '130px' } });
+    tm.addEventListener('change', () => { const l = getSched(); l[i].time = tm.value; l[i].fired = ''; setSched(l); });
+    const sel = h('select', { class: 'inp', style: { flex: 1, minWidth: '120px' } }, ids.map(id => h('option', { value: id, selected: id === s.board ? true : null }, all[id].name || 'Untitled')));
+    sel.addEventListener('change', () => { const l = getSched(); l[i].board = sel.value; setSched(l); });
+    const days = h('button', { class: 'b sm', onClick: () => { const l = getSched(); l[i].days = l[i].days === 'weekdays' ? 'every' : 'weekdays'; setSched(l); openSheet.rebuild(); } }, s.days === 'weekdays' ? 'Weekdays' : 'Every day');
+    const on = h('button', { class: 'b sm' + (s.on ? ' on' : ''), onClick: () => { const l = getSched(); l[i].on = !l[i].on; setSched(l); openSheet.rebuild(); } }, s.on ? 'On' : 'Off');
+    body.appendChild(h('div', { class: 'item', style: { flexWrap: 'wrap' } }, tm, sel, days, on, h('button', { class: 'b sm', style: { border: 0 }, 'aria-label': 'Remove', onClick: () => { const l = getSched(); l.splice(i, 1); setSched(l); openSheet.rebuild(); } }, '×')));
+  });
+  f.buttons([['+ Add a time', () => { const l = getSched(); l.push({ time: '', board: board.id in all ? board.id : ids[0], days: 'weekdays', on: true }); setSched(l); openSheet.rebuild(); }]]);
+}
+
+/* ---------- department library (boards added to the site's library folder) ---------- */
+function loadLibrary(item) {
+  const map = {};
+  Object.keys(item.images || {}).forEach(id => { const d = item.images[id]; if (typeof d === 'string' && /^data:image\/(png|jpeg|gif|webp);base64,/.test(d)) map[id] = Images.put(d); });
+  const b = normalizeBoard(clone(item.board)); if (!b) return;
+  b.id = uid(); if (b.bg.photo) b.bg.photo = map[b.bg.photo] || null; b.widgets.forEach(w => { if (w.p && w.p.img) w.p.img = map[w.p.img] || null; });
+  loadBoard(b); toastUndo('Loaded ' + (b.name || 'board'));
 }
 
 /* ---------- boot ---------- */
@@ -4520,7 +4636,7 @@ W.questions = {
     if (p.order.length !== items.length || p.order.some(i => i >= items.length)) { reorder(); }
     function reorder() { p.order = items.map((_, i) => i); if (p.shuffle) for (let i = p.order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [p.order[i], p.order[j]] = [p.order[j], p.order[i]]; } p.pos = -1; }
     const head = h('div', { class: 'muted', style: { fontSize: cellFs(.38), letterSpacing: '.05em', textTransform: 'uppercase' } });
-    const q = h('div', { style: { fontSize: 'calc(var(--cell) * .9 * var(--ts) * ' + (p.size || 1) + ')', fontWeight: 500, lineHeight: 1.3, textAlign: 'center', padding: '0 4cqw', overflow: 'auto', maxHeight: '100%' } });
+    const q = h('div', { class: 'qtext', style: { fontSize: 'calc(var(--cell) * .9 * var(--ts) * ' + (p.size || 1) + ')', fontWeight: 500, lineHeight: 1.3, textAlign: 'center', padding: '0 4cqw', overflow: 'auto', maxHeight: '100%' } });
     const back = btn('‹ Back', () => { if (p.pos > 0) { p.pos--; api.save(); draw(); } }, 'sm');
     const next = btn('Next ›', () => { if (p.pos < items.length - 1) { p.pos++; api.save(); draw(); Sound.play('pop'); } else toast('That was the last one. Tap Restart to go again.'); }, 'pri');
     b.appendChild(h('div', { class: 'fill', style: { justifyContent: 'space-between', padding: '1.5cqh 0 3cqh', gap: '2cqh' } }, head, h('div', { style: { flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' } }, q),
@@ -4700,6 +4816,269 @@ W.youtube = {
   defaults: () => ({ url: '' }), clean(p) { p.url = safeStr(p.url, 500); },
   mount: (b, p, api) => embedMount(b, p, api, 'youtube'),
   settings(f, p) { f.text('YouTube link', () => p.url, v => p.url = v.trim().slice(0, 500), 'https://youtu.be/…'); }
+};
+
+/* 4 Example Classroom Board — widgets part 3: organizers, vocabulary, lab data, timeline, read aloud */
+const PT = (() => { try { const d = document.createElement('div'); d.contentEditable = 'plaintext-only'; return d.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true'; } catch (e) { return 'true'; } })();
+function ceField(text, ph, onText, style) {
+  const el = h('div', { class: 'ce', contenteditable: PT, spellcheck: 'false', 'data-ph': ph || '', style: style || {} }, text || '');
+  el.addEventListener('input', () => onText(el.innerText.replace(/\n$/, '')));
+  el.addEventListener('paste', e => { e.preventDefault(); const s = (e.clipboardData || window.clipboardData).getData('text/plain'); try { document.execCommand('insertText', false, s); } catch (er) { } });
+  return el;
+}
+
+/* ===== Read aloud ===== */
+const Speech = {
+  on: null,
+  speak(text, b, rate) {
+    const ss = window.speechSynthesis;
+    if (!ss || !window.SpeechSynthesisUtterance) { toast('Read aloud isn’t available in this browser'); return; }
+    if (this.on === b) { ss.cancel(); this.done(); return; }
+    ss.cancel(); this.done();
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = rate || 1;
+    u.onend = u.onerror = () => { if (this.on === b) this.done(); };
+    this.on = b; b.classList.add('on'); b.innerHTML = ''; b.appendChild(icon('stop', 20)); ss.speak(u);
+  },
+  done() { if (this.on) { this.on.classList.remove('on'); this.on.innerHTML = ''; this.on.appendChild(icon('speak', 20)); } this.on = null; }
+};
+function speakBtn(getText, rate, api) {
+  const b = h('button', { class: 'spk noLP', 'aria-label': 'Read aloud' }, icon('speak', 20));
+  b.addEventListener('click', e => { e.stopPropagation(); const t = (getText() || '').replace(/\s+/g, ' ').trim(); if (t) Speech.speak(t, b, rate); });
+  if (api) api.cleanup(() => { if (Speech.on === b) { try { speechSynthesis.cancel(); } catch (e) { } Speech.on = null; } });
+  return b;
+}
+function speakSettings(f, p) {
+  f.toggle('Show a read-aloud button', () => !!p.speak, v => p.speak = v);
+  if (p.speak) f.chips('Reading speed', [[0.8, 'Slower'], [1, 'Normal'], [1.2, 'Faster']], () => p.rate || 1, v => p.rate = v);
+}
+// add read aloud to text boxes, sticky notes and question draw
+(function () {
+  const wrapMount = (type, getText) => {
+    const d = W[type], m = d.mount, s = d.settings;
+    d.mount = (b, p, api) => { const r = m(b, p, api); if (p.speak) b.appendChild(speakBtn(() => getText(b), p.rate, api)); return r; };
+    d.settings = (f, p, ctx) => { if (s) s(f, p, ctx); f.sec('Read aloud'); speakSettings(f, p); };
+  };
+  wrapMount('text', b => { const t = b.querySelector('.txt'); return t ? t.innerText : ''; });
+  wrapMount('sticky', b => { const t = b.querySelector('.txt'); return t ? t.innerText : ''; });
+  wrapMount('questions', b => { const q = b.querySelector('.qtext'); return q ? q.innerText : ''; });
+})();
+
+/* ===== Graphic organizer ===== */
+const ORG = {
+  tchart: { name: 'T-chart', heads: ['Column A', 'Column B'], cells: 2 },
+  venn: { name: 'Venn diagram', heads: ['Topic A', 'Topic B', 'Both'], cells: 3 },
+  kwl: { name: 'KWL chart', heads: ['What I Know', 'What I Want to know', 'What I Learned'], cells: 3 },
+  frayer: { name: 'Frayer model', heads: ['Definition', 'Characteristics', 'Examples', 'Non-examples', 'Word'], cells: 4 }
+};
+W.organizer = {
+  title: 'Graphic organizer', icon: 'organizer', size: [16, 10], min: [6, 5], titleOf: p => (ORG[p.kind] || ORG.tchart).name,
+  defaults: () => ({ kind: 'tchart', title: '', size: 1, data: {} }),
+  clean(p) { if (!ORG[p.kind]) p.kind = 'tchart'; p.title = safeStr(p.title, 80); p.data = (p.data && typeof p.data === 'object') ? p.data : {}; Object.keys(p.data).forEach(k => { const d = p.data[k] || {}; p.data[k] = { h: (Array.isArray(d.h) ? d.h : []).map(x => safeStr(x, 60)), c: (Array.isArray(d.c) ? d.c : []).map(x => safeStr(x, 2000)) }; }); },
+  mount(b, p, api) {
+    const K = ORG[p.kind] || ORG.tchart, D = p.data[p.kind] = p.data[p.kind] || { h: [], c: [] };
+    const k = p.size || 1, sz = m => 'calc(var(--cell) * ' + (m * k) + ' * var(--ts))';
+    const head = i => ceField(D.h[i] != null && D.h[i] !== '' ? D.h[i] : K.heads[i], K.heads[i], v => { D.h[i] = v; api.save(); }, { fontWeight: 700, fontSize: sz(.55), color: 'var(--accent2)', textAlign: 'center' });
+    const cell = (i, extra) => ceField(D.c[i] || '', 'Type here…', v => { D.c[i] = v; api.save(); }, Object.assign({ fontSize: sz(.48), lineHeight: 1.35, flex: 1, overflow: 'auto', padding: '.3em .4em' }, extra || {}));
+    const root = h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 'calc(var(--cell)*.3)', gap: 'calc(var(--cell)*.2)' } });
+    if (p.title) root.appendChild(h('div', { style: { fontSize: sz(.7), fontWeight: 700, textAlign: 'center' } }, p.title));
+    const line = '0.12em solid var(--accent)';
+    if (p.kind === 'tchart' || p.kind === 'kwl') {
+      const n = K.cells, g = h('div', { style: { flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(' + n + ',minmax(0,1fr))', gridTemplateRows: 'auto minmax(0,1fr)' } });
+      for (let i = 0; i < n; i++) g.appendChild(h('div', { style: { borderBottom: line, borderLeft: i ? line : 'none', padding: '.25em .3em .35em', fontSize: sz(.55) } }, head(i)));
+      for (let i = 0; i < n; i++) g.appendChild(h('div', { style: { borderLeft: i ? line : 'none', display: 'flex', minHeight: 0 } }, cell(i)));
+      root.appendChild(g);
+    } else if (p.kind === 'frayer') {
+      const g = h('div', { style: { flex: 1, minHeight: 0, position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', border: line, borderRadius: '6px' } });
+      [0, 1, 2, 3].forEach(i => g.appendChild(h('div', { style: { display: 'flex', flexDirection: i < 2 ? 'column' : 'column-reverse', minHeight: 0, borderRight: i % 2 === 0 ? line : 'none', borderBottom: i < 2 ? line : 'none', padding: '.3em' } }, h('div', { style: { textAlign: i % 2 ? 'right' : 'left' } }, head(i)), cell(i, i < 2 ? { paddingBottom: '1.8em' } : { paddingTop: '1.8em' }))));
+      const wordEl = ceField(D.h[4] || '', 'Word', v => { D.h[4] = v; api.save(); }, { fontWeight: 700, fontSize: sz(.75), textAlign: 'center', minWidth: '4em' });
+      g.appendChild(h('div', { style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', background: 'var(--card)', border: line, borderRadius: '999px', padding: '.35em 1.1em', maxWidth: '46%' } }, wordEl));
+      root.appendChild(g);
+    } else {
+      const v = h('div', { style: { flex: 1, minHeight: 0, position: 'relative' } });
+      const circ = (l, c) => h('div', { style: { position: 'absolute', top: '2%', bottom: '2%', left: l, width: '58%', borderRadius: '50%', border: '0.12em solid ' + c, background: c + '1F', fontSize: sz(.5) } });
+      v.append(circ('3%', '#5DA9FF'), circ('39%', '#F5C842'));
+      const reg = (l, w, i, hd) => h('div', { style: { position: 'absolute', left: l, width: w, top: '10%', bottom: '10%', display: 'flex', flexDirection: 'column', gap: '.2em', zIndex: 1 } }, hd, cell(i, { textAlign: 'center' }));
+      v.append(reg('9%', '28%', 0, head(0)), reg('39%', '22%', 2, head(2)), reg('63%', '28%', 1, head(1)));
+      root.appendChild(v);
+    }
+    b.appendChild(root);
+  },
+  settings(f, p) {
+    f.chips('Type', Object.keys(ORG).map(k => [k, ORG[k].name]), () => p.kind, v => p.kind = v);
+    f.text('Title (optional)', () => p.title, v => p.title = v.slice(0, 80), 'e.g. Plant vs. animal cells');
+    f.chips('Text size', [['0.75', 'S'], ['1', 'M'], ['1.3', 'L'], ['1.7', 'XL']], () => String(p.size), v => p.size = +v);
+    f.note('Tap any heading or box on the board to type in it. Each type keeps its own text, so you can switch back and forth.');
+    f.node(confirmBtn('Clear this organizer', () => { p.data[p.kind] = { h: [], c: [] }; f.fire(); }));
+  }
+};
+
+/* ===== Vocabulary card ===== */
+W.vocab = {
+  title: 'Vocabulary', label: 'Vocabulary card', icon: 'vocab', size: [14, 7], min: [6, 4], titleOf: p => p.word ? 'Vocabulary · ' + p.word : 'Vocabulary',
+  defaults: () => ({ word: '', pos: '', def: '', ex: '', img: null, speak: true, rate: 1, size: 1 }),
+  clean(p) { p.word = safeStr(p.word, 60); p.pos = safeStr(p.pos, 30); p.def = safeStr(p.def, 600); p.ex = safeStr(p.ex, 600); p.img = typeof p.img === 'string' ? p.img.slice(0, 40) : null; },
+  mount(b, p, api) {
+    const k = p.size || 1, sz = m => 'calc(var(--cell) * ' + (m * k) + ' * var(--ts))';
+    const save = () => api.save();
+    const word = ceField(p.word, 'Word', v => { p.word = v.trim(); api.refreshTitle(); save(); }, { fontSize: sz(1.15), fontWeight: 700, lineHeight: 1.05 });
+    const pos = ceField(p.pos, 'part of speech', v => { p.pos = v.trim(); save(); }, { fontSize: sz(.42), fontStyle: 'italic', color: 'var(--accent2)', background: 'rgba(93,169,255,.14)', borderRadius: '6px', padding: '.1em .5em', alignSelf: 'flex-start' });
+    const lab = t => h('div', { style: { fontSize: sz(.34), letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 700, marginTop: '.5em' } }, t);
+    const def = ceField(p.def, 'What it means…', v => { p.def = v; save(); }, { fontSize: sz(.55), lineHeight: 1.35 });
+    const ex = ceField(p.ex, 'Use it in a sentence…', v => { p.ex = v; save(); }, { fontSize: sz(.5), lineHeight: 1.35, fontStyle: 'italic' });
+    const col = h('div', { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '.25em', overflow: 'auto' } }, h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '.6em', flexWrap: 'wrap' } }, word, pos), lab('Definition'), def, lab('Example'), ex);
+    const data = Images.get(p.img);
+    b.appendChild(h('div', { style: { position: 'absolute', inset: 0, display: 'flex', gap: 'calc(var(--cell)*.4)', padding: 'calc(var(--cell)*.35) calc(var(--cell)*.5)' } }, col,
+      data ? h('div', { style: { width: '34%', flex: 'none', display: 'flex', alignItems: 'center' } }, h('img', { src: data, alt: p.word || 'Vocabulary picture', draggable: 'false', style: { width: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px', background: '#fff' } })) : null));
+    if (p.speak) b.appendChild(speakBtn(() => [p.word, p.pos, p.def ? 'Definition: ' + p.def : '', p.ex ? 'Example: ' + p.ex : ''].filter(Boolean).join('. '), p.rate, api));
+  },
+  settings(f, p, ctx) {
+    f.text('Word', () => p.word, v => p.word = v.slice(0, 60));
+    f.text('Part of speech', () => p.pos, v => p.pos = v.slice(0, 30), 'noun, verb, adjective…');
+    f.area('Definition', () => p.def, v => p.def = v.slice(0, 600), '', 3);
+    f.area('Example sentence', () => p.ex, v => p.ex = v.slice(0, 600), '', 3);
+    f.buttons([[p.img ? 'Replace picture' : 'Add a picture', async () => { const file = await pickFile('image/*'); if (!file) return; try { p.img = Images.put(await readImageFile(file, 1200)); ctx.save(); ctx.remount(); ctx.rebuild(); } catch (e) { toast(e.message); } }], p.img ? ['Remove picture', () => { p.img = null; ctx.save(); ctx.remount(); ctx.rebuild(); }] : null]);
+    f.chips('Text size', [['0.75', 'S'], ['1', 'M'], ['1.3', 'L'], ['1.7', 'XL']], () => String(p.size), v => p.size = +v);
+    f.sec('Read aloud'); speakSettings(f, p);
+    f.note('You can also tap the word, definition or example on the board and type right there.');
+  }
+};
+
+/* ===== Lab data table + graph ===== */
+const SERIES = ['#5DA9FF', '#FF9F43', '#3DDC84'];
+function niceStep(range, n) { const raw = range / Math.max(1, n), m = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / m; return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 5 ? 5 : 10) * m; }
+const fmtN = v => { const a = Math.abs(v); return (a >= 1e5 || (a > 0 && a < 1e-3)) ? v.toExponential(1) : String(Math.round(v * 1000) / 1000); };
+W.labdata = {
+  title: 'Lab data', label: 'Lab data table + graph', icon: 'lab', size: [18, 10], min: [8, 5], titleOf: p => p.title ? 'Lab data · ' + p.title : 'Lab data',
+  defaults: () => ({ title: '', x: 'Time (s)', ys: ['Distance (m)'], rows: [['', ''], ['', ''], ['', ''], ['', ''], ['', ''], ['', '']], kind: 'scatter', fit: false, table: true }),
+  clean(p) {
+    p.title = safeStr(p.title, 80); p.x = safeStr(p.x, 40) || 'x'; p.ys = (Array.isArray(p.ys) ? p.ys : ['y']).slice(0, 3).map(s => safeStr(s, 40) || 'y'); if (!p.ys.length) p.ys = ['y'];
+    p.rows = (Array.isArray(p.rows) ? p.rows : []).slice(0, 60).map(r => { const a = Array.isArray(r) ? r : []; return Array.from({ length: p.ys.length + 1 }, (_, i) => safeStr(a[i] == null ? '' : String(a[i]), 20)); });
+    if (!p.rows.length) p.rows = [Array(p.ys.length + 1).fill('')];
+  },
+  mount(b, p, api) {
+    const nc = p.ys.length + 1;
+    p.rows.forEach(r => { while (r.length < nc) r.push(''); r.length = nc; });
+    const wrap = h('div', { style: { position: 'absolute', inset: 0, display: 'flex', gap: 'calc(var(--cell)*.3)', padding: 'calc(var(--cell)*.3)' } });
+    const tableBox = h('div', { class: 'noLP', style: { flex: 'none', overflow: 'auto', display: p.table ? 'flex' : 'none', flexDirection: 'column', gap: '6px' } });
+    const graph = h('div', { style: { flex: 1, minWidth: 0, minHeight: 0, position: 'relative' } });
+    wrap.append(tableBox, graph); b.appendChild(wrap);
+    const cellStyle = { width: '100%', minWidth: '4.2em', boxSizing: 'border-box', border: '1px solid rgba(156,200,255,.3)', background: 'rgba(0,0,0,.18)', color: 'var(--text)', borderRadius: '6px', padding: '.3em .4em', fontSize: '15px', fontFamily: 'inherit', textAlign: 'center' };
+    const tbl = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + nc + ', minmax(4.2em, 6.5em))', gap: '4px' } });
+    const hdr = (val, i) => { const inp = h('input', { value: val, 'aria-label': 'Column name', style: Object.assign({}, cellStyle, { fontWeight: 700, background: 'transparent', border: '0', borderBottom: '2px solid ' + (i ? SERIES[i - 1] : 'var(--accent2)'), borderRadius: 0, fontSize: '13px' }) }); inp.addEventListener('input', () => { if (i === 0) p.x = inp.value.slice(0, 40); else p.ys[i - 1] = inp.value.slice(0, 40); api.save(); draw(); }); return inp; };
+    tbl.append(hdr(p.x, 0), ...p.ys.map((y, i) => hdr(y, i + 1)));
+    const inputs = [];
+    p.rows.forEach((r, ri) => r.forEach((v, ci) => {
+      const inp = h('input', { value: v, inputmode: 'decimal', 'aria-label': (ci ? p.ys[ci - 1] : p.x) + ' row ' + (ri + 1), style: cellStyle });
+      inp.addEventListener('input', () => { p.rows[ri][ci] = inp.value.slice(0, 20); api.save(); draw(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const nx = inputs[(ri + 1) * nc + ci]; if (nx) nx.focus(); else { p.rows.push(Array(nc).fill('')); api.save(); api.remount(); setTimeout(() => { const it = inst.get(api.w.id); const all = it && it.body.querySelectorAll('input[inputmode=decimal]'); if (all) all[(ri + 1) * nc + ci].focus(); }, 30); } } });
+      inputs.push(inp); tbl.appendChild(inp);
+    }));
+    tableBox.append(tbl, h('div', { class: 'row selonly', style: { gap: '6px' } }, btn('+ Row', () => { p.rows.push(Array(nc).fill('')); api.save(); api.remount(); }, 'sm'), p.rows.length > 1 ? btn('− Row', () => { p.rows.pop(); api.save(); api.remount(); }, 'sm') : null));
+    function draw() {
+      const Wd = graph.clientWidth, Hd = graph.clientHeight; if (!Wd || !Hd) return;
+      const series = p.ys.map((name, si) => p.rows.map(r => [parseFloat(r[0]), parseFloat(r[si + 1])]).filter(q => isFinite(q[0]) && isFinite(q[1])));
+      const pts = series.flat();
+      const ink = getComputedStyle(api.el).getPropertyValue('--text').trim() || '#F2F6FC';
+      if (!pts.length) { graph.innerHTML = ''; graph.appendChild(h('div', { class: 'muted', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', fontSize: '15px', padding: '10px', border: '2px dashed rgba(156,200,255,.25)', borderRadius: '8px' } }, 'Type data in the table and the graph appears here')); return; }
+      let x0 = Math.min(...pts.map(q => q[0])), x1 = Math.max(...pts.map(q => q[0])), y0 = Math.min(...pts.map(q => q[1])), y1 = Math.max(...pts.map(q => q[1]));
+      if (x0 >= 0) x0 = 0; if (y0 >= 0) y0 = 0; if (x1 === x0) x1 = x0 + 1; if (y1 === y0) y1 = y0 + 1;
+      const sx = niceStep(x1 - x0, 6), sy = niceStep(y1 - y0, 5);
+      x0 = Math.floor(x0 / sx) * sx; x1 = Math.ceil(x1 / sx) * sx; y0 = Math.floor(y0 / sy) * sy; y1 = Math.ceil(y1 / sy) * sy;
+      const fsz = clamp(Math.min(Wd, Hd) * .045, 11, 16), L = fsz * 4.2, B = fsz * 3.4, T = p.title ? fsz * 2.2 : fsz * .8, R = fsz;
+      const X = v => L + (v - x0) / (x1 - x0) * (Wd - L - R), Y = v => Hd - B - (v - y0) / (y1 - y0) * (Hd - B - T);
+      let g = '';
+      for (let v = x0; v <= x1 + sx / 2; v += sx) g += '<line x1="' + X(v) + '" y1="' + Y(y0) + '" x2="' + X(v) + '" y2="' + Y(y1) + '" stroke="var(--track)" /><text x="' + X(v) + '" y="' + (Y(y0) + fsz * 1.3) + '" font-size="' + fsz + '" text-anchor="middle" fill="' + ink + '" opacity=".8">' + fmtN(v) + '</text>';
+      for (let v = y0; v <= y1 + sy / 2; v += sy) g += '<line x1="' + X(x0) + '" y1="' + Y(v) + '" x2="' + X(x1) + '" y2="' + Y(v) + '" stroke="var(--track)" /><text x="' + (X(x0) - 6) + '" y="' + (Y(v) + fsz * .35) + '" font-size="' + fsz + '" text-anchor="end" fill="' + ink + '" opacity=".8">' + fmtN(v) + '</text>';
+      g += '<line x1="' + X(x0) + '" y1="' + Y(y0) + '" x2="' + X(x1) + '" y2="' + Y(y0) + '" stroke="' + ink + '" stroke-width="2"/><line x1="' + X(x0) + '" y1="' + Y(y0) + '" x2="' + X(x0) + '" y2="' + Y(y1) + '" stroke="' + ink + '" stroke-width="2"/>';
+      const esc = s => String(s).replace(/[<>&"]/g, '');
+      g += '<text x="' + ((X(x0) + X(x1)) / 2) + '" y="' + (Hd - fsz * .5) + '" font-size="' + fsz * 1.05 + '" font-weight="700" text-anchor="middle" fill="' + ink + '">' + esc(p.x) + '</text>';
+      if (p.ys.length === 1) g += '<text transform="translate(' + (fsz * 1.1) + ',' + ((Y(y0) + Y(y1)) / 2) + ') rotate(-90)" font-size="' + fsz * 1.05 + '" font-weight="700" text-anchor="middle" fill="' + ink + '">' + esc(p.ys[0]) + '</text>';
+      else p.ys.forEach((n, si) => { g += '<rect x="' + (X(x0) + 8) + '" y="' + (T + si * fsz * 1.4) + '" width="' + fsz * .8 + '" height="' + fsz * .8 + '" rx="2" fill="' + SERIES[si] + '"/><text x="' + (X(x0) + 8 + fsz) + '" y="' + (T + si * fsz * 1.4 + fsz * .75) + '" font-size="' + fsz + '" fill="' + ink + '">' + esc(n) + '</text>'; });
+      if (p.title) g += '<text x="' + (Wd / 2) + '" y="' + fsz * 1.4 + '" font-size="' + fsz * 1.2 + '" font-weight="700" text-anchor="middle" fill="' + ink + '">' + esc(p.title) + '</text>';
+      const eqs = [];
+      series.forEach((s, si) => {
+        const c = SERIES[si];
+        if (p.kind === 'line' && s.length > 1) g += '<polyline fill="none" stroke="' + c + '" stroke-width="2.5" points="' + s.slice().sort((a, b) => a[0] - b[0]).map(q => X(q[0]) + ',' + Y(q[1])).join(' ') + '"/>';
+        if (p.fit && s.length > 1) {
+          const n = s.length, mx = s.reduce((a, q) => a + q[0], 0) / n, my = s.reduce((a, q) => a + q[1], 0) / n;
+          const sxx = s.reduce((a, q) => a + (q[0] - mx) ** 2, 0), sxy = s.reduce((a, q) => a + (q[0] - mx) * (q[1] - my), 0);
+          if (sxx > 0) { const m = sxy / sxx, k = my - m * mx; g += '<line x1="' + X(x0) + '" y1="' + Y(m * x0 + k) + '" x2="' + X(x1) + '" y2="' + Y(m * x1 + k) + '" stroke="' + c + '" stroke-width="2" stroke-dasharray="6 5" clip-path="url(#lc' + api.w.id + ')"/>'; eqs.push([c, 'y = ' + fmtN(m) + 'x ' + (k < 0 ? '− ' : '+ ') + fmtN(Math.abs(k))]); }
+        }
+        s.forEach(q => { g += '<circle cx="' + X(q[0]) + '" cy="' + Y(q[1]) + '" r="' + clamp(fsz * .38, 4, 7) + '" fill="' + c + '" stroke="#0B1F3A" stroke-width="1.5"/>'; });
+      });
+      eqs.forEach((e, i) => { g += '<text x="' + (X(x1) - 4) + '" y="' + (Y(y0) - fsz * .7 - (eqs.length - 1 - i) * fsz * 1.4) + '" paint-order="stroke" stroke="var(--card)" stroke-width="4" font-size="' + fsz * 1.05 + '" font-weight="700" text-anchor="end" fill="' + e[0] + '">' + e[1] + '</text>'; });
+      graph.innerHTML = '<svg width="' + Wd + '" height="' + Hd + '" role="img" aria-label="Graph of the lab data" style="font-family:Arial,Helvetica,sans-serif"><defs><clipPath id="lc' + api.w.id + '"><rect x="' + X(x0) + '" y="' + Y(y1) + '" width="' + (X(x1) - X(x0)) + '" height="' + (Y(y0) - Y(y1)) + '"/></clipPath></defs>' + g + '</svg>';
+    }
+    const layoutDir = () => { const wide = b.clientWidth > b.clientHeight * 1.25; wrap.style.flexDirection = wide ? 'row' : 'column'; tableBox.style.maxHeight = wide ? '' : '45%'; tableBox.style.maxWidth = wide ? '48%' : ''; };
+    requestAnimationFrame(() => { layoutDir(); draw(); });
+    return { onResize() { layoutDir(); draw(); } };
+  },
+  settings(f, p) {
+    f.text('Title (optional)', () => p.title, v => p.title = v.slice(0, 80), 'e.g. Ramp height vs. speed');
+    f.text('x column (what you change)', () => p.x, v => p.x = v.slice(0, 40), 'Time (s)');
+    f.chips('Number of data columns', [[1, '1'], [2, '2'], [3, '3 (trials)']], () => p.ys.length, v => { while (p.ys.length < v) p.ys.push('Trial ' + (p.ys.length + 1)); p.ys.length = v; p.rows.forEach(r => { while (r.length < v + 1) r.push(''); r.length = v + 1; }); });
+    p.ys.forEach((y, i) => f.text('Data column ' + (i + 1) + ' name', () => p.ys[i], v => p.ys[i] = v.slice(0, 40)));
+    f.chips('Graph', [['scatter', 'Dots'], ['line', 'Dots + line']], () => p.kind, v => p.kind = v);
+    f.toggle('Show a line of best fit (with its equation)', () => p.fit, v => p.fit = v);
+    f.toggle('Show the table (turn off to show only the graph)', () => p.table, v => p.table = v);
+    f.node(confirmBtn('Clear all data', () => { p.rows = Array.from({ length: 6 }, () => Array(p.ys.length + 1).fill('')); f.fire(); }));
+  }
+};
+
+/* ===== Timeline ===== */
+function tlNum(s) {
+  s = String(s || '').trim(); let m;
+  if ((m = s.match(/^(\d{1,6})\s*(b\.?c\.?e?\.?)$/i))) return -(+m[1]);
+  if ((m = s.match(/^-\s*(\d{1,6})$/))) return -(+m[1]);
+  if ((m = s.match(/^(\d{1,6})\s*(c\.?e\.?|a\.?d\.?)?$/i))) return +m[1];
+  if ((m = s.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/))) return +m[1] + ((+m[2] - 1) * 30.4 + (+m[3] || 1)) / 366;
+  const t = Date.parse(s); if (!isNaN(t)) { const d = new Date(t); return d.getFullYear() + (d.getMonth() * 30.4 + d.getDate()) / 366; }
+  if ((m = s.match(/(\d{3,4})s?/))) return +m[1];
+  return null;
+}
+W.timeline = {
+  title: 'Timeline', icon: 'timeline', size: [24, 8], min: [8, 4], titleOf: p => p.title ? 'Timeline · ' + p.title : 'Timeline',
+  defaults: () => ({ title: '', events: [], scale: true, size: 1 }),
+  clean(p) { p.title = safeStr(p.title, 80); p.events = (Array.isArray(p.events) ? p.events : []).slice(0, 40).map(e => ({ d: safeStr(e && e.d, 40), t: safeStr(e && e.t, 140) })).filter(e => e.d || e.t); },
+  mount(b, p, api) {
+    const k = p.size || 1;
+    const area = h('div', { style: { position: 'absolute', left: 0, right: 0, top: p.title ? 'calc(var(--cell)*.9)' : '0', bottom: 'calc(var(--cell)*.1)' } });
+    const di = h('input', { class: 'inp', placeholder: 'Date or year', style: { width: '9em' } }), ti = h('input', { class: 'inp', placeholder: 'What happened', style: { flex: 1 } });
+    const addE = () => { if (!di.value.trim() && !ti.value.trim()) return; p.events.push({ d: di.value.trim().slice(0, 40), t: ti.value.trim().slice(0, 140) }); api.save(); api.remount(); };
+    [di, ti].forEach(x => x.addEventListener('keydown', e => { if (e.key === 'Enter') addE(); }));
+    b.append(p.title ? h('div', { style: { position: 'absolute', left: 0, right: 0, top: 'calc(var(--cell)*.2)', textAlign: 'center', fontWeight: 700, fontSize: 'calc(var(--cell)*' + (.65 * k) + '*var(--ts))' } }, p.title) : '', area,
+      h('div', { class: 'row selonly', style: { position: 'absolute', left: '10px', right: '10px', bottom: '8px', zIndex: 3, background: 'rgba(6,16,30,.85)', borderRadius: '10px', padding: '6px' } }, di, ti, btn('Add', addE, 'pri')));
+    function draw() {
+      area.innerHTML = '';
+      const ev = p.events.map((e, i) => ({ e, i, n: tlNum(e.d) })).filter(x => x.e.d || x.e.t);
+      if (!ev.length) { area.appendChild(h('div', { class: 'muted', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' } }, 'Add events with a date or year, like “1776” or “500 BCE”.')); return; }
+      ev.sort((a, b) => (a.n == null ? 1e9 : a.n) - (b.n == null ? 1e9 : b.n) || a.i - b.i);
+      const nums = ev.filter(x => x.n != null).map(x => x.n), lo = Math.min(...nums), hi = Math.max(...nums);
+      const pos = (x, j) => p.scale && hi > lo && x.n != null ? (x.n - lo) / (hi - lo) : (ev.length === 1 ? .5 : j / (ev.length - 1));
+      const W0 = area.clientWidth || 600, M = .07;
+      area.appendChild(h('div', { style: { position: 'absolute', left: (M * 100 - 3) + '%', right: (M * 100 - 3) + '%', top: 'calc(50% - 2px)', height: '4px', background: 'var(--accent)', borderRadius: '2px' } }));
+      const lastX = { up: [-1, -1], dn: [-1, -1] };
+      ev.forEach((x, j) => {
+        const f = M + pos(x, j) * (1 - 2 * M), px = f * W0, side = j % 2 === 0 ? 'up' : 'dn';
+        const tier = (px - lastX[side][0]) < W0 * .16 && lastX[side][1] === 0 ? 1 : 0; lastX[side] = [px, tier];
+        const off = (tier ? 46 : 12);
+        area.appendChild(h('div', { style: { position: 'absolute', left: 'calc(' + (f * 100) + '% - 7px)', top: 'calc(50% - 7px)', width: '14px', height: '14px', borderRadius: '50%', background: '#F5C842', border: '2px solid #0B1F3A', zIndex: 2 } }));
+        area.appendChild(h('div', { style: { position: 'absolute', left: 'calc(' + (f * 100) + '% - 1px)', width: '2px', background: 'var(--accent2)', opacity: .6, top: side === 'up' ? 'calc(' + (50 - off) + '%)' : '50%', height: off + '%' } }));
+        const box = h('div', { style: { position: 'absolute', width: 'max-content', maxWidth: Math.max(110, W0 * .2) + 'px', fontSize: 'calc(var(--cell)*' + (.42 * k) + '*var(--ts))', lineHeight: 1.25, textAlign: 'center', transform: 'translateX(' + (f < .12 ? '-10%' : f > .88 ? '-90%' : '-50%') + ')' + (side === 'up' ? ' translateY(-100%)' : ''), left: (f * 100) + '%', top: side === 'up' ? 'calc(' + (50 - off) + '% - 4px)' : 'calc(' + (50 + off) + '% + 4px)' } },
+          h('div', { style: { fontWeight: 700, color: 'var(--accent2)' } }, x.e.d), h('div', {}, x.e.t));
+        area.appendChild(box);
+      });
+    }
+    requestAnimationFrame(draw);
+    return { onResize: draw };
+  },
+  settings(f, p) {
+    f.text('Title (optional)', () => p.title, v => p.title = v.slice(0, 80), 'e.g. Road to the Revolution');
+    f.area('Events, one per line as “date | what happened”', () => p.events.map(e => e.d + ' | ' + e.t).join('\n'), v => { p.events = v.split('\n').map(l => { const i = l.indexOf('|'); return i < 0 ? { d: l.trim().slice(0, 40), t: '' } : { d: l.slice(0, i).trim().slice(0, 40), t: l.slice(i + 1).trim().slice(0, 140) }; }).filter(e => e.d || e.t).slice(0, 40); }, '1765 | Stamp Act\n1770 | Boston Massacre\n1773 | Boston Tea Party\nJuly 4, 1776 | Declaration of Independence', 10);
+    f.note('Dates can be years (1776, 500 BCE) or full dates (July 4, 1776).');
+    f.toggle('Space events by their dates (to scale)', () => p.scale, v => p.scale = v);
+    f.chips('Text size', [['0.8', 'S'], ['1', 'M'], ['1.3', 'L'], ['1.6', 'XL']], () => String(p.size), v => p.size = +v);
+  }
 };
 
 /* Starter boards */

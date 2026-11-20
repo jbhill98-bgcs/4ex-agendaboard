@@ -1,9 +1,9 @@
 /* 4 Example Classroom Board — core */
 'use strict';
 const COLS = 32;
-const VERSION = '1.4';
+const VERSION = '1.5';
 const FEEDBACK_URL = '';
-const CHANGES = ['New Agenda widget: a titled numbered or bulleted list you can check off.', 'Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
+const CHANGES = ['New widgets: graphic organizer (T-chart, Venn, KWL, Frayer), vocabulary card, lab data table with graph, and timeline.', 'Read aloud: a speaker button can read text boxes, notes, vocabulary and questions out loud.', 'Press and hold any card to move it. Tidy up lines everything up in one tap.', 'Saved boards can load by themselves on a schedule, and the department library shows shared boards.', 'Messages now have an Undo button.', 'New Agenda widget: a titled numbered or bulleted list you can check off.', 'Text and sticky note editing: a simpler formatting bar that sits outside the card, so it never covers your text.', 'Cleaner cards: labels and buttons only show when you tap a widget.', 'Starter boards (Bell Work, Test Day, Group Work, Study Hall, Review Game).', 'Automatic backups: restore any of the last 5 versions from Boards.', 'Works offline once it has been opened on the website.', 'Solid background colors and card colors, Arial text, new icons, your 4 Example logo.'];
 const W = {};            // widget registry
 const $ = (s, r) => (r || document).querySelector(s);
 function h(tag, attrs) {
@@ -365,6 +365,7 @@ function mountW(w) {
   head.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; startDrag(e, w.id, 'move'); });
   rs.addEventListener('pointerdown', e => startDrag(e, w.id, 'size'));
   el.addEventListener('pointerdown', () => { if (!document.body.classList.contains('present')) select(w.id); }, true);
+  el.addEventListener('pointerdown', e => longPress(e, w.id, el));
   placeW(w);
   if (selected === w.id) el.classList.add('sel');
 }
@@ -381,7 +382,7 @@ function renderAll() {
   layout(); Ink.redraw(); refreshEmpty();
 }
 function refreshEmpty() { emptyEl.style.display = board.widgets.length ? 'none' : 'flex'; }
-function drawTemplates() { const t = emptyEl.querySelector('.tpls'); t.innerHTML = ''; TEMPLATES.forEach(tp => t.appendChild(h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); toast('Loaded the ' + tp.name + ' template'); } }, tp.name))); }
+function drawTemplates() { const t = emptyEl.querySelector('.tpls'); t.innerHTML = ''; TEMPLATES.forEach(tp => t.appendChild(h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); toastUndo('Loaded the ' + tp.name + ' board'); } }, tp.name))); }
 function topZ() { return board.widgets.reduce((m, w) => Math.max(m, w.z || 0), 0); }
 function findSpot(wd, ht) {
   const occ = (x, y) => board.widgets.some(o => x < o.x + o.w && x + wd > o.x && y < o.y + o.h && y + ht > o.y);
@@ -411,7 +412,7 @@ function removeW(id) {
   const before = snap();
   destroyW(id); board.widgets = board.widgets.filter(w => w.id !== id);
   if (selected === id) selected = null;
-  refreshEmpty(); pushUndo(before); saveCurrent(); toast('Widget removed · tap Undo to bring it back');
+  refreshEmpty(); pushUndo(before); saveCurrent(); toastUndo('Widget removed');
 }
 function select(id) {
   if (selected === id) return;
@@ -427,7 +428,26 @@ boardEl.addEventListener('pointerdown', e => {
 });
 
 /* drag & resize */
-function startDrag(e, id, mode) {
+let lpDrag = false, lpSuppress = 0;
+const LP_SKIP = 'button,input,textarea,select,a,iframe,[contenteditable="true"],[contenteditable="plaintext-only"],.wg-head,.wg-rs,.txt-bar,.noLP';
+function longPress(e, id, el) {
+  if (locked || document.body.classList.contains('present') || document.body.classList.contains('drawing')) return;
+  if (e.button > 0 || (e.target.closest && e.target.closest(LP_SKIP))) return;
+  const sx = e.clientX, sy = e.clientY, pid = e.pointerId; let timer = null;
+  const cancel = () => { clearTimeout(timer); el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', cancel); el.removeEventListener('pointercancel', cancel); el.classList.remove('lifting'); };
+  const mv = ev => { if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 10) cancel(); };
+  el.addEventListener('pointermove', mv); el.addEventListener('pointerup', cancel); el.addEventListener('pointercancel', cancel);
+  el.classList.add('lifting');
+  timer = setTimeout(() => {
+    cancel(); lpDrag = true; lpSuppress = Date.now() + 100000;
+    try { navigator.vibrate && navigator.vibrate(15); } catch (er) { }
+    startDrag({ preventDefault() { }, stopPropagation() { }, currentTarget: el, pointerId: pid, clientX: sx, clientY: sy }, id, 'move', () => { lpDrag = false; lpSuppress = Date.now() + 350; });
+  }, 450);
+}
+document.addEventListener('touchmove', e => { if (lpDrag) e.preventDefault(); }, { passive: false });
+document.addEventListener('click', e => { if (Date.now() < lpSuppress) { e.stopPropagation(); e.preventDefault(); lpSuppress = 0; } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.wg') && !e.target.closest('input,textarea,[contenteditable="true"],[contenteditable="plaintext-only"]')) e.preventDefault(); });
+function startDrag(e, id, mode, onEnd) {
   if (locked || document.body.classList.contains('present')) return;
   const w = findW(id), it = inst.get(id); if (!w || !it) return;
   e.preventDefault(); e.stopPropagation(); select(id);
@@ -446,6 +466,7 @@ function startDrag(e, id, mode) {
   const up = () => {
     t.removeEventListener('pointermove', mv); t.removeEventListener('pointerup', up); t.removeEventListener('pointercancel', up);
     el.classList.remove('dragging');
+    if (onEnd) onEnd();
     if (moved) {
       const sn = board.bg.snap !== false, r = v => sn ? Math.round(v / cell) : Math.round(v / cell * 4) / 4;
       if (mode === 'move') { w.x = r(el.offsetLeft); w.y = r(el.offsetTop); }
@@ -510,7 +531,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 /* ---------- toast / popup ---------- */
 const toastEl = h('div', { id: 'toast', role: 'status' });
 let toastT = null;
-function toast(msg, ms) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), ms || 2400); }
+function toastUndo(msg) { toast(msg, 6000, ['Undo', () => undo()]); }
+function toast(msg, ms, action) { toastEl.innerHTML = ''; toastEl.appendChild(document.createTextNode(msg)); toastEl.classList.toggle('act', !!action); if (action) toastEl.appendChild(h('button', { class: 'tact', onClick: e => { e.stopPropagation(); toastEl.classList.remove('show'); action[1](); } }, action[0])); toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), ms || 2400); }
 const popupEl = h('div', { id: 'popup', role: 'alert' });
 const popQueue = []; let popShowing = false;
 function showPopup(title, msg, onSnooze) {
@@ -609,6 +631,7 @@ function openSettings(id) {
 const CATS = [
   ['Time', ['clock', 'timer', 'stopwatch', 'date', 'calendar', 'countdown', 'period']],
   ['Classroom', ['text', 'sticky', 'agenda', 'target', 'reminders', 'stoplight', 'volume', 'sign', 'image', 'qr']],
+  ['Organizers & content', ['organizer', 'vocab', 'timeline', 'labdata']],
   ['Math & games', ['spinner', 'dice', 'coin', 'random', 'names', 'groups', 'score', 'questions', 'plane', 'desmos', 'youtube']]
 ];
 function openAdd() {
@@ -664,7 +687,7 @@ function openBoardPanel() {
     f.sec('Classroom');
     f.toggle('Keep the screen awake', () => prefs.wake, v => { prefs.wake = v; savePrefs(); if (v) Wake.req(); else Wake.off(); });
     f.note(Wake.status());
-    f.buttons([['Test sound', () => Sound.play('chime')], ['Clear drawing', () => { if (!board.ink.length) return; pushUndo(snap()); board.ink = []; Ink.redraw(); saveCurrent(); toast('Drawing cleared'); }]]);
+    f.buttons([['Test sound', () => Sound.play('chime')], ['Clear drawing', () => { if (!board.ink.length) return; pushUndo(snap()); board.ink = []; Ink.redraw(); saveCurrent(); toastUndo('Drawing cleared'); }]]);
   }, { onClose: () => { if (snap() !== before) pushUndo(before); } });
 }
 
@@ -699,7 +722,7 @@ function openBoards() {
     f.buttons([
       isSaved ? ['Save changes', () => { updateSaved(); toast('Saved “' + board.name + '”'); openSheet.rebuild(); }, 'pri'] : null,
       ['Save as new board', () => { const b = saveBoardAs(board.name && board.name !== 'My board' ? board.name : 'Board ' + (Object.keys(all).length + 1)); toast('Saved “' + b.name + '”'); openSheet.rebuild(); }, isSaved ? '' : 'pri'],
-      ['New blank board', () => { loadBoard(newBoard()); closeSheet(); toast('Blank board · tap Undo to go back'); }]
+      ['New blank board', () => { loadBoard(newBoard()); closeSheet(); toastUndo('Blank board'); }]
     ]);
     f.sec('Your boards');
     const list = Object.values(all).sort((a, b) => (b.updated || 0) - (a.updated || 0));
@@ -711,13 +734,17 @@ function openBoards() {
         confirmBtn('Delete', () => { deleteSaved(b.id); openSheet.rebuild(); })));
     });
     f.note(Cloud.ready ? 'Your boards sync to your Claude account, so they show up on your iPad and laptop.' : 'Boards are saved on this device. Use Export and Import to move a board to another device or share it with a colleague.');
+    scheduleSection(f, body);
+    f.sec('From the department');
+    if (!LIBRARY.length) f.note('Boards your coworkers share will show up here. Want yours added? Export it below and send the file to Joshua.');
+    LIBRARY.forEach(it => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (it.board && it.board.name) || 'Board'), h('div', { class: 'sub' }, (it.by ? 'Shared by ' + it.by + ' · ' : '') + ((it.board && it.board.widgets) || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { closeSheet(); loadLibrary(it); } }, 'Load'))));
     f.sec('Starter boards');
     f.note('Ready-made layouts to start from. Loading one replaces what’s on the board (Undo brings it back).');
-    TEMPLATES.forEach(tp => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, tp.name), h('div', { class: 'sub' }, tp.desc)), h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); closeSheet(); toast('Loaded the ' + tp.name + ' template'); } }, 'Load'))));
+    TEMPLATES.forEach(tp => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, tp.name), h('div', { class: 'sub' }, tp.desc)), h('button', { class: 'b', onClick: () => { loadBoard(makeTemplate(tp)); closeSheet(); toastUndo('Loaded the ' + tp.name + ' board'); } }, 'Load'))));
     f.sec('Earlier versions of this board');
     const bk = backups();
     if (!bk.length) f.note('The board keeps its last 5 versions automatically (when you open it, every 15 minutes while you work, and before you load another board).');
-    bk.forEach(x => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (x.board.name || 'Board') + ' · ' + new Date(x.t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })), h('div', { class: 'sub' }, (x.board.widgets || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { const b = normalizeBoard(clone(x.board)); if (b) { loadBoard(b); closeSheet(); toast('Restored · tap Undo to go back'); } } }, 'Restore'))));
+    bk.forEach(x => body.appendChild(h('div', { class: 'item' }, h('div', { class: 'grow' }, h('div', { class: 'nm' }, (x.board.name || 'Board') + ' · ' + new Date(x.t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })), h('div', { class: 'sub' }, (x.board.widgets || []).length + ' widgets')), h('button', { class: 'b', onClick: () => { const b = normalizeBoard(clone(x.board)); if (b) { loadBoard(b); closeSheet(); toastUndo('Restored'); } } }, 'Restore'))));
     f.sec('Share or move a board');
     f.buttons([['Export this board', exportBoard], ['Import a board file', importBoard]]);
     f.note('An exported board file includes its images. Class lists for the name picker are never included; they stay on this device.');
@@ -834,6 +861,7 @@ dock.append(
   dbtn('boards', 'boards', 'Boards', () => openBoards()),
   h('span', { class: 'sep' }),
   dbtn('undo', 'undo', 'Undo', () => undo()),
+  dbtn('tidy', 'tidy', 'Tidy up', () => tidyUp()),
   dbtn('lock', 'lock', 'Lock', () => setLocked(!locked)),
   dbtn('present', 'tv', 'Present', () => setPresent(true)),
   dbtn('help', 'help', 'Help', () => openHelp()));
@@ -925,7 +953,7 @@ let lastMin = -1;
 setInterval(() => {
   const now = new Date();
   tickers.forEach(t => { try { t.fn(now); } catch (e) { console.error(e); } });
-  if (now.getMinutes() !== lastMin || snoozes.length) { lastMin = now.getMinutes(); checkReminders(now); }
+  if (now.getMinutes() !== lastMin || snoozes.length) { lastMin = now.getMinutes(); checkReminders(now); checkSchedule(now); }
 }, 250);
 let firstTap = true;
 document.addEventListener('pointerdown', () => { Sound.unlock(); if (firstTap) { firstTap = false; Wake.req(); toastEl.classList.remove('show'); } }, true);
@@ -963,6 +991,82 @@ async function onCloudReady() {
   if (changed) LS.set('boards', all);
   const sp = docs.find(d => d.id === 'spinPresets');
   if (sp && sp.data && Array.isArray(sp.data.list)) { const local = LS.get('spinPresets', []); if ((sp.data.updated || 0) > (LS.get('spinPresetsUpdated', 0))) { LS.set('spinPresets', sp.data.list); LS.set('spinPresetsUpdated', sp.data.updated); } else if (local.length) Cloud.put('spinPresets', { list: local, updated: Date.now() }, 0); }
+}
+
+/* ---------- tidy up ---------- */
+function tidyUp() {
+  if (locked) { toast('Unlock the board first'); return; }
+  if (!board.widgets.length) return;
+  const before = snap();
+  const ws = board.widgets.slice();
+  ws.forEach(w => { w.x = Math.round(w.x); w.y = Math.round(w.y); w.w = Math.max(1, Math.round(w.w)); w.h = Math.max(1, Math.round(w.h)); });
+  const align = (key) => { // pull edges that are within 1 square of each other onto the same line
+    const sorted = ws.slice().sort((a, b) => a[key] - b[key]); let group = [];
+    const flush = () => { if (group.length > 1) { const v = Math.min(...group.map(g => g[key])); group.forEach(g => g[key] = v); } group = []; };
+    sorted.forEach(w => { if (group.length && w[key] - group[0][key] > 1) flush(); group.push(w); }); flush();
+  };
+  align('x'); align('y');
+  // make widgets that share a row and nearly match in height the same height
+  const rows = {}; ws.forEach(w => (rows[w.y] = rows[w.y] || []).push(w));
+  Object.values(rows).forEach(r => { if (r.length < 2) return; const hs = r.map(w => w.h); const m = Math.max(...hs); r.forEach(w => { if (m - w.h <= 1) w.h = m; }); });
+  // close small gaps (1 square) and open up a 1-square gutter between neighbors
+  // resolve overlaps: place top-to-bottom, left-to-right
+  const placed = [];
+  ws.sort((a, b) => a.y - b.y || a.x - b.x).forEach(w => {
+    w.x = clamp(w.x, 0, COLS - Math.min(w.w, COLS));
+    let guard = 0;
+    while (guard++ < 200) {
+      const hit = placed.find(o => w.x < o.x + o.w && w.x + w.w > o.x && w.y < o.y + o.h && w.y + w.h > o.y);
+      if (!hit) break;
+      w.y = hit.y + hit.h;
+    }
+    placed.push(w);
+  });
+  if (snap() === before) { toast('Already tidy'); return; }
+  pushUndo(before); renderAll(); saveCurrent(); toastUndo('Tidied up');
+}
+
+/* ---------- scheduled boards ---------- */
+function getSched() { return LS.get('schedule', []) || []; }
+function setSched(l) { LS.set('schedule', l); }
+function checkSchedule(now) {
+  const hm = pad2(now.getHours()) + ':' + pad2(now.getMinutes()), day = todayKey(now), wk = now.getDay() % 6 !== 0;
+  const list = getSched(); let changed = false;
+  list.forEach(s => {
+    if (!s.on || s.time !== hm || s.fired === day || (s.days === 'weekdays' && !wk)) return;
+    s.fired = day; changed = true;
+    const b = savedBoards()[s.board]; if (!b) return;
+    if (savedBoards()[board.id] && board.id !== b.id) updateSaved();
+    if (board.id === b.id) return;
+    closeSheet(); loadBoard(b); toastUndo('Scheduled: loaded ' + (b.name || 'board'));
+  });
+  if (changed) setSched(list);
+}
+function scheduleSection(f, body) {
+  const all = savedBoards(), ids = Object.keys(all);
+  f.sec('Load boards on a schedule');
+  if (!ids.length) { f.note('Save a board first, then you can have it load by itself at a set time (for example, Bell Work at 9:35).'); return; }
+  f.note('At each time, the board loads by itself. Changes to the saved board on screen are kept first.');
+  const list = getSched();
+  list.forEach((s, i) => {
+    const tm = h('input', { class: 'inp', type: 'time', value: s.time || '', style: { width: '130px' } });
+    tm.addEventListener('change', () => { const l = getSched(); l[i].time = tm.value; l[i].fired = ''; setSched(l); });
+    const sel = h('select', { class: 'inp', style: { flex: 1, minWidth: '120px' } }, ids.map(id => h('option', { value: id, selected: id === s.board ? true : null }, all[id].name || 'Untitled')));
+    sel.addEventListener('change', () => { const l = getSched(); l[i].board = sel.value; setSched(l); });
+    const days = h('button', { class: 'b sm', onClick: () => { const l = getSched(); l[i].days = l[i].days === 'weekdays' ? 'every' : 'weekdays'; setSched(l); openSheet.rebuild(); } }, s.days === 'weekdays' ? 'Weekdays' : 'Every day');
+    const on = h('button', { class: 'b sm' + (s.on ? ' on' : ''), onClick: () => { const l = getSched(); l[i].on = !l[i].on; setSched(l); openSheet.rebuild(); } }, s.on ? 'On' : 'Off');
+    body.appendChild(h('div', { class: 'item', style: { flexWrap: 'wrap' } }, tm, sel, days, on, h('button', { class: 'b sm', style: { border: 0 }, 'aria-label': 'Remove', onClick: () => { const l = getSched(); l.splice(i, 1); setSched(l); openSheet.rebuild(); } }, '×')));
+  });
+  f.buttons([['+ Add a time', () => { const l = getSched(); l.push({ time: '', board: board.id in all ? board.id : ids[0], days: 'weekdays', on: true }); setSched(l); openSheet.rebuild(); }]]);
+}
+
+/* ---------- department library (boards added to the site's library folder) ---------- */
+function loadLibrary(item) {
+  const map = {};
+  Object.keys(item.images || {}).forEach(id => { const d = item.images[id]; if (typeof d === 'string' && /^data:image\/(png|jpeg|gif|webp);base64,/.test(d)) map[id] = Images.put(d); });
+  const b = normalizeBoard(clone(item.board)); if (!b) return;
+  b.id = uid(); if (b.bg.photo) b.bg.photo = map[b.bg.photo] || null; b.widgets.forEach(w => { if (w.p && w.p.img) w.p.img = map[w.p.img] || null; });
+  loadBoard(b); toastUndo('Loaded ' + (b.name || 'board'));
 }
 
 /* ---------- boot ---------- */

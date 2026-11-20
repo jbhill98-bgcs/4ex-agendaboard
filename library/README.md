@@ -1,0 +1,1 @@
+Shared boards for the department library. Put exported board files (`*.board.json`, from Boards › Export this board) in this folder and run `python3 build.py`. Each one shows under Boards › From the department.
